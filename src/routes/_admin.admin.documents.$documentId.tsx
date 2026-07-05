@@ -99,10 +99,10 @@ function AdminDocDetailPage() {
 
       <section className="grid grid-cols-1 md:grid-cols-[220px_220px_1fr] gap-4">
         <div className="rounded-xl border bg-card p-4 flex flex-col items-center">
-          <ScoreRing value={plagScore} label="Plagiarism" color="var(--plag)" />
+          <ScoreRing value={plagScore} label="Plagiarism" variant="plag" />
         </div>
         <div className="rounded-xl border bg-card p-4 flex flex-col items-center">
-          <ScoreRing value={aiScore} label="AI Writing" color="var(--ai)" />
+          <ScoreRing value={aiScore} label="AI Writing" variant="ai" />
         </div>
         <div className="rounded-xl border bg-card p-4 space-y-2 text-sm">
           <div className="font-semibold">Metadata</div>
