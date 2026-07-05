@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Users, FileText, CheckCircle2, Clock, Coins } from "lucide-react";
 import { api } from "@/lib/api";
-import { Skeleton } from "@/components/ui/skeleton";
+import { AdminLoader } from "@/components/Loader";
 
 interface AdminDashboardResp {
   total_users: number;
