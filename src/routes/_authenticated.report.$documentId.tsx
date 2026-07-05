@@ -378,31 +378,48 @@ function HighlightedDocument({
   onChunkClick: (i: number) => void;
 }) {
   if (!chunks || chunks.length === 0) {
-    return <p className="whitespace-pre-wrap leading-relaxed text-[15px]">{fallbackText}</p>;
+    const paragraphs = (fallbackText || "")
+      .replace(/\r/g, "")
+      .split(/\n{2,}/)
+      .map((p) => p.replace(/\n/g, " ").replace(/\s+/g, " ").trim())
+      .filter(Boolean);
+    return (
+      <div className="space-y-4 leading-[1.85] text-[15px] text-foreground/90 [word-break:break-word] [overflow-wrap:anywhere] font-serif">
+        {paragraphs.map((p, i) => (
+          <p key={i}>{p}</p>
+        ))}
+      </div>
+    );
   }
+  // Normalize chunk text so PDF line-breaks don't split words mid-line
+  const normalize = (t: string) =>
+    t.replace(/\r/g, "").replace(/-\n/g, "").replace(/\n+/g, " ").replace(/\s+/g, " ").trim();
+
   return (
-    <div className="leading-relaxed text-[15px] space-y-1">
+    <div className="leading-[1.9] text-[15px] text-foreground/90 [word-break:break-word] [overflow-wrap:anywhere] font-serif">
       {chunks.map((c) => {
         const plag = c.plagiarism_score ?? 0;
         const ai = c.ai_score ?? 0;
         const plagBg = plag > 5 ? `rgba(229,57,53,${Math.min(0.35, 0.1 + plag / 200)})` : undefined;
         const aiUnderline = ai > 5;
         const isActive = activeChunk === c.index;
+        const clickable = plag > 5 || ai > 5;
 
         return (
           <span
             key={c.index}
             id={`doc-chunk-${c.index}`}
-            onClick={() => (plag > 5 || ai > 5) && onChunkClick(c.index)}
+            onClick={() => clickable && onChunkClick(c.index)}
             title={plag > 5 ? `Similarity: ${plag.toFixed(1)}%` : ai > 5 ? `AI likelihood: ${ai.toFixed(1)}%` : undefined}
-            className={`${plag > 5 || ai > 5 ? "cursor-pointer" : ""} ${isActive ? "ring-2 ring-brand rounded-sm" : ""} transition-colors`}
+            className={`${clickable ? "cursor-pointer hover:brightness-95" : ""} ${isActive ? "ring-2 ring-brand rounded-sm" : ""} transition-colors`}
             style={{
               backgroundColor: plagBg,
               borderBottom: aiUnderline ? `2px solid var(--ai)` : undefined,
-              padding: plag > 5 || aiUnderline ? "0 2px" : undefined,
+              padding: plag > 5 || aiUnderline ? "1px 2px" : undefined,
+              borderRadius: plag > 5 ? "2px" : undefined,
             }}
           >
-            {c.text}{" "}
+            {normalize(c.text)}{" "}
           </span>
         );
       })}
