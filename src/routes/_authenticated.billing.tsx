@@ -26,6 +26,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageLoader } from "@/components/Loader";
 import { EmptyState } from "@/components/EmptyState";
 import { cn } from "@/lib/utils";
 
