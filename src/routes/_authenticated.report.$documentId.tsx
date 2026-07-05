@@ -273,10 +273,20 @@ function ReportView({
       )}
 
       {/* Split screen */}
-      <div className="flex-1 grid lg:grid-cols-[minmax(0,1fr)_440px] overflow-hidden">
+      <div className="flex-1 grid lg:grid-cols-[minmax(0,1fr)_440px] overflow-hidden min-w-0">
         {/* Left: document viewer */}
-        <div className="overflow-y-auto p-6 md:p-10 bg-surface">
-          <div className="max-w-3xl mx-auto rounded-xl bg-card border p-8 shadow-sm">
+        <div className="overflow-y-auto overflow-x-hidden p-6 md:p-10 bg-surface min-w-0">
+          <div className="max-w-3xl mx-auto rounded-xl bg-card border p-8 md:p-10 shadow-sm min-w-0 overflow-hidden">
+            <div className="mb-6 pb-4 border-b flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground">Document</div>
+                <div className="font-semibold truncate">{report.file_name}</div>
+              </div>
+              <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
+                <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-plag/70"/> Similarity</span>
+                <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm border-b-2 border-ai"/> AI</span>
+              </div>
+            </div>
             <HighlightedDocument
               chunks={report.chunks}
               fallbackText={report.extracted_text}
