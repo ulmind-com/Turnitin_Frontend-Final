@@ -207,8 +207,8 @@ function ReportView({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
-                disabled={scanFailed}
-                className="bg-brand text-brand-foreground hover:bg-brand/90"
+                disabled={scanFailed || !!downloading}
+                className="bg-brand text-brand-foreground hover:bg-brand/90 shadow-md shadow-brand/25"
               >
                 <Download className="h-4 w-4 mr-2" /> Download PDF
                 <ChevronDown className="h-4 w-4 ml-1 opacity-80" />
