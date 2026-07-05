@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { FileText, Search } from "lucide-react";
 import { api } from "@/lib/api";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
+import { AdminLoader } from "@/components/Loader";
 import { StatusBadge } from "@/components/StatusBadge";
 import { EmptyState } from "@/components/EmptyState";
 import {
