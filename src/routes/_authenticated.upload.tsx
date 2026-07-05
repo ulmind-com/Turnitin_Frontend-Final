@@ -126,9 +126,13 @@ function UploadPage() {
         <Button
           disabled={!file || mutation.isPending}
           onClick={() => file && mutation.mutate(file)}
-          className="bg-brand text-brand-foreground hover:bg-brand/90"
+          className="bg-brand text-brand-foreground hover:bg-brand/90 shadow-md shadow-brand/25 min-w-[220px]"
         >
-          {mutation.isPending ? "Uploading…" : "Scan document (1 credit)"}
+          {mutation.isPending ? (
+            <>Uploading <DotLoader className="ml-1" /></>
+          ) : (
+            "Scan document (1 credit)"
+          )}
         </Button>
       </div>
 
