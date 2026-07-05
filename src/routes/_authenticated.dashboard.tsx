@@ -36,7 +36,7 @@ function Dashboard() {
   });
 
   if (isLoading || !data) {
-    return <div className="p-8 animate-pulse text-muted-foreground">Loading dashboard…</div>;
+    return <PageLoader label="Loading your dashboard…" />;
   }
 
   return (
