@@ -184,13 +184,42 @@ function ReportView({
           </div>
         </div>
         <div className="ml-auto">
-          <Button
-            onClick={downloadPdf}
-            disabled={scanFailed}
-            className="bg-brand text-brand-foreground hover:bg-brand/90"
-          >
-            <Download className="h-4 w-4 mr-2" /> Download PDF
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                disabled={scanFailed}
+                className="bg-brand text-brand-foreground hover:bg-brand/90"
+              >
+                <Download className="h-4 w-4 mr-2" /> Download PDF
+                <ChevronDown className="h-4 w-4 ml-1 opacity-80" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-64">
+              <DropdownMenuLabel>Turnitin-style reports</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => downloadPdf("combined")}>
+                <FileDown className="h-4 w-4 mr-2 text-brand" />
+                <div className="flex flex-col">
+                  <span className="font-medium">Combined report</span>
+                  <span className="text-xs text-muted-foreground">Full analysis in one PDF</span>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => downloadPdf("plagiarism")}>
+                <FileText className="h-4 w-4 mr-2 text-plag" />
+                <div className="flex flex-col">
+                  <span className="font-medium">Plagiarism report</span>
+                  <span className="text-xs text-muted-foreground">Light brown highlights</span>
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => downloadPdf("ai")}>
+                <Sparkles className="h-4 w-4 mr-2 text-ai" />
+                <div className="flex flex-col">
+                  <span className="font-medium">AI detection report</span>
+                  <span className="text-xs text-muted-foreground">Sky blue highlights</span>
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
