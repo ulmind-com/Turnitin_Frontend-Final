@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, FileText, User as UserIcon, AlertTriangle } from "lucide-react";
 import { api } from "@/lib/api";
-import { Skeleton } from "@/components/ui/skeleton";
+import { AdminLoader } from "@/components/Loader";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ScoreRing } from "@/components/ScoreRing";
 
