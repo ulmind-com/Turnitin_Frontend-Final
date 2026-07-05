@@ -118,11 +118,7 @@ function BillingPage() {
         <h2 className="text-lg font-semibold mb-4">Payment history</h2>
         <div className="rounded-xl border bg-card overflow-hidden">
           {paymentsQ.isLoading ? (
-            <div className="p-4 space-y-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full" />
-              ))}
-            </div>
+            <PageLoader label="Loading payment history…" />
           ) : !paymentsQ.data?.length ? (
             <EmptyState
               icon={CreditCard}
