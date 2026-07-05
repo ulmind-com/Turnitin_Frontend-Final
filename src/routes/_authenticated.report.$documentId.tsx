@@ -53,7 +53,7 @@ interface ReportResp {
 }
 
 export const Route = createFileRoute("/_authenticated/report/$documentId")({
-  head: () => ({ meta: [{ title: "Feedback Studio — Turnitin Clone" }] }),
+  head: () => ({ meta: [{ title: "Feedback Studio — NAK Detection Tool Clone" }] }),
   component: ReportPage,
 });
 
@@ -215,7 +215,7 @@ function ReportView({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-64">
-              <DropdownMenuLabel>Turnitin-style reports</DropdownMenuLabel>
+              <DropdownMenuLabel>NAK Detection Tool-style reports</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => downloadPdf("combined")}>
                 <FileDown className="h-4 w-4 mr-2 text-brand" />

@@ -142,7 +142,7 @@ function AdminLayout() {
       </div>
 
       <footer className="border-t bg-white py-4 text-center text-xs text-muted-foreground">
-        © 2026 Turnitin Clone — Admin Console
+        © 2026 NAK Detection Tool Clone — Admin Console
       </footer>
     </div>
   );
@@ -152,7 +152,7 @@ function Brand({}: Record<string, never> = {}): ReactNode {
   return (
     <div className="flex items-center gap-2 font-semibold">
       <ShieldCheck className="h-5 w-5 text-brand" />
-      <span>Turnitin Admin</span>
+      <span>NAK Detection Tool Admin</span>
     </div>
   );
 }

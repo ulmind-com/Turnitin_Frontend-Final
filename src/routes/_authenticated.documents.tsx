@@ -44,7 +44,7 @@ interface DocsResp {
 const PAGE_SIZE = 10;
 
 export const Route = createFileRoute("/_authenticated/documents")({
-  head: () => ({ meta: [{ title: "Documents — Turnitin Clone" }] }),
+  head: () => ({ meta: [{ title: "Documents — NAK Detection Tool Clone" }] }),
   component: DocumentsPage,
 });
 

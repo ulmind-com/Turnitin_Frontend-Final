@@ -25,7 +25,7 @@ interface DashboardResp {
 }
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — Turnitin Clone" }] }),
+  head: () => ({ meta: [{ title: "Dashboard — NAK Detection Tool Clone" }] }),
   component: Dashboard,
 });
 

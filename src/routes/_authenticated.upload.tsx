@@ -13,7 +13,7 @@ const MAX_MB = 10;
 const ACCEPT = [".pdf", ".docx"];
 
 export const Route = createFileRoute("/_authenticated/upload")({
-  head: () => ({ meta: [{ title: "Upload — Turnitin Clone" }] }),
+  head: () => ({ meta: [{ title: "Upload — NAK Detection Tool Clone" }] }),
   component: UploadPage,
 });
 
