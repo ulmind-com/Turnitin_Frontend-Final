@@ -25,7 +25,7 @@ const searchSchema = z.object({ redirect: z.string().optional() });
 
 export const Route = createFileRoute("/login")({
   validateSearch: (s) => searchSchema.parse(s),
-  head: () => ({ meta: [{ title: "Sign in — Turnitin Clone" }] }),
+  head: () => ({ meta: [{ title: "Sign in — NAK Detection Tool Clone" }] }),
   component: LoginPage,
 });
 
@@ -133,7 +133,7 @@ export function AuthShell({
       <div className="flex flex-col min-h-screen">
         <header className="h-16 flex items-center px-6">
           <Link to="/" className="flex items-center gap-2 font-semibold text-brand">
-            <ShieldCheck className="h-5 w-5" /> Turnitin
+            <ShieldCheck className="h-5 w-5" /> NAK Detection Tool
           </Link>
         </header>
         <main className="flex-1 flex items-center justify-center px-6 py-8">
@@ -158,7 +158,7 @@ export function AuthShell({
           </motion.div>
         </main>
         <footer className="py-4 px-6 text-center text-xs text-muted-foreground">
-          © 2026 Turnitin Clone
+          © 2026 NAK Detection Tool Clone
         </footer>
       </div>
 

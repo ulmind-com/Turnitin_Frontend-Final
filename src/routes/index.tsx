@@ -39,13 +39,13 @@ interface Plan {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Turnitin — Academic Integrity, Reimagined for 2026" },
+      { title: "NAK Detection Tool — Academic Integrity, Reimagined for 2026" },
       {
         name: "description",
         content:
           "Empower students to do their best, original work. AI writing detection and web-scale plagiarism analysis in one premium Feedback Studio.",
       },
-      { property: "og:title", content: "Turnitin — Academic Integrity, Reimagined" },
+      { property: "og:title", content: "NAK Detection Tool — Academic Integrity, Reimagined" },
       {
         property: "og:description",
         content: "AI + plagiarism detection with a Feedback Studio built for 2026 classrooms.",
@@ -91,7 +91,7 @@ function Header() {
             <div className="absolute inset-0 bg-brand/30 blur-md rounded-full" />
             <ShieldCheck className="relative h-6 w-6" />
           </div>
-          Turnitin
+          NAK Detection Tool
         </Link>
         <nav className="ml-10 hidden md:flex items-center gap-1">
           {[
@@ -192,7 +192,7 @@ function Hero() {
           </h1>
 
           <p className="mt-7 text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
-            Upload student writing and get a Turnitin-style{" "}
+            Upload student writing and get a NAK Detection Tool-style{" "}
             <b className="text-foreground">Originality Report</b> in seconds — plagiarism
             sources, AI-writing heuristics, and inline feedback in one premium studio.
           </p>
@@ -954,7 +954,7 @@ function Footer() {
       <div className="max-w-7xl mx-auto px-6 pt-16 pb-10 grid md:grid-cols-[1.5fr_1fr_1fr_1fr] gap-10">
         <div>
           <Link to="/" className="flex items-center gap-2 font-semibold text-brand text-lg">
-            <ShieldCheck className="h-6 w-6" /> Turnitin
+            <ShieldCheck className="h-6 w-6" /> NAK Detection Tool
           </Link>
           <p className="mt-3 text-sm text-muted-foreground max-w-sm leading-relaxed">
             Academic integrity, reimagined for the AI era. Built for educators who care about
@@ -994,7 +994,7 @@ function Footer() {
 
       <div className="border-t">
         <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-          <div>© 2026 Turnitin Clone. Academic integrity, reimagined.</div>
+          <div>© 2026 NAK Detection Tool Clone. Academic integrity, reimagined.</div>
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1"><Lock className="h-3 w-3" /> SOC 2 · FERPA</span>
             <span>Made with care for educators</span>

@@ -22,7 +22,7 @@ const schema = z.object({
 type Form = z.infer<typeof schema>;
 
 export const Route = createFileRoute("/_authenticated/settings")({
-  head: () => ({ meta: [{ title: "Account settings — Turnitin Clone" }] }),
+  head: () => ({ meta: [{ title: "Account settings — NAK Detection Tool Clone" }] }),
   component: SettingsPage,
 });
 
