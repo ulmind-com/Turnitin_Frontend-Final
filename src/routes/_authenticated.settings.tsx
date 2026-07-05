@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageLoader } from "@/components/Loader";
 
 const schema = z.object({
   name: z.string().min(2, "Name is too short").max(80),
@@ -89,10 +90,7 @@ function SettingsPage() {
         </div>
 
         {isLoading || !user ? (
-          <div className="p-6 space-y-4">
-            <Skeleton className="h-10" />
-            <Skeleton className="h-10" />
-          </div>
+          <PageLoader label="Loading profile…" />
         ) : (
           <form
             onSubmit={handleSubmit((v) => mutation.mutate(v))}

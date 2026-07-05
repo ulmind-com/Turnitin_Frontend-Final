@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
 import { EmptyState } from "@/components/EmptyState";
+import { PageLoader } from "@/components/Loader";
 
 interface DashboardResp {
   credits: number;
@@ -36,7 +37,7 @@ function Dashboard() {
   });
 
   if (isLoading || !data) {
-    return <div className="p-8 animate-pulse text-muted-foreground">Loading dashboard…</div>;
+    return <PageLoader label="Loading your dashboard…" />;
   }
 
   return (
