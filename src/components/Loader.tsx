@@ -376,3 +376,140 @@ export function PageLoader({ label = "Loading…" }: { label?: string }) {
   );
 }
 
+/* ------------------------------------------------------------------ */
+/* ADMIN LOADER — radar sweep + shield, premium admin panel look      */
+/* ------------------------------------------------------------------ */
+
+interface AdminLoaderProps {
+  label?: string;
+  sublabel?: string;
+  stages?: string[];
+  className?: string;
+}
+
+export function AdminLoader({
+  label = "Loading admin data",
+  sublabel = "Fetching the latest records from the platform.",
+  stages = [
+    "Authenticating admin session",
+    "Querying platform database",
+    "Aggregating records",
+    "Rendering results",
+  ],
+  className = "",
+}: AdminLoaderProps) {
+  const [stageIdx, setStageIdx] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setStageIdx((i) => (i + 1) % stages.length);
+    }, 1400);
+    return () => window.clearInterval(id);
+  }, [stages.length]);
+
+  const size = 160;
+
+  return (
+    <div className={`w-full flex flex-col items-center justify-center gap-6 py-12 px-6 ${className}`}>
+      <div className="relative" style={{ width: size, height: size }}>
+        <svg width={size} height={size} viewBox="0 0 160 160" className="absolute inset-0">
+          <defs>
+            <radialGradient id="admin-halo" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.35" />
+              <stop offset="70%" stopColor="#f59e0b" stopOpacity="0" />
+            </radialGradient>
+            <linearGradient id="admin-sweep" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#10b981" stopOpacity="0" />
+              <stop offset="100%" stopColor="#10b981" stopOpacity="0.9" />
+            </linearGradient>
+          </defs>
+          <circle cx="80" cy="80" r="76" fill="url(#admin-halo)" />
+          {[24, 44, 64].map((r) => (
+            <circle key={r} cx="80" cy="80" r={r} fill="none" stroke="#f59e0b" strokeOpacity="0.18" strokeWidth="1" />
+          ))}
+          <line x1="80" y1="4" x2="80" y2="156" stroke="#f59e0b" strokeOpacity="0.12" />
+          <line x1="4" y1="80" x2="156" y2="80" stroke="#f59e0b" strokeOpacity="0.12" />
+        </svg>
+
+        <motion.div
+          className="absolute inset-0"
+          style={{ transformOrigin: "50% 50%" }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2.4, repeat: Infinity, ease: "linear" }}
+        >
+          <svg width={size} height={size} viewBox="0 0 160 160">
+            <path d="M80 80 L80 8 A72 72 0 0 1 148 62 Z" fill="url(#admin-sweep)" />
+          </svg>
+        </motion.div>
+
+        <motion.div
+          className="absolute inset-0 flex items-center justify-center"
+          animate={{ scale: [1, 1.06, 1] }}
+          transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <div
+            className="h-14 w-14 rounded-2xl flex items-center justify-center shadow-xl"
+            style={{
+              background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+              boxShadow: "0 8px 30px rgba(245, 158, 11, 0.45)",
+            }}
+          >
+            <svg viewBox="0 0 24 24" className="h-7 w-7 text-white" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6l8-4z" />
+              <path d="M9 12l2 2 4-4" />
+            </svg>
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="absolute inset-0"
+          animate={{ rotate: -360 }}
+          transition={{ duration: 3.6, repeat: Infinity, ease: "linear" }}
+        >
+          <span
+            className="absolute h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_12px_#10b981]"
+            style={{ top: 6, left: size / 2 - 4 }}
+          />
+        </motion.div>
+      </div>
+
+      <div className="text-center max-w-sm">
+        <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 text-amber-800 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em]">
+          <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+          Admin Console
+        </div>
+        <h3 className="mt-3 text-lg font-bold text-slate-900">{label}</h3>
+        <p className="text-sm text-muted-foreground mt-1">{sublabel}</p>
+      </div>
+
+      <div className="w-full max-w-md rounded-xl border bg-card/60 backdrop-blur px-4 py-3">
+        <div className="flex items-center gap-3">
+          <motion.span
+            key={stageIdx}
+            initial={{ opacity: 0, x: -4 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"
+          />
+          <motion.span
+            key={`t-${stageIdx}`}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-sm font-medium text-slate-700 flex-1"
+          >
+            {stages[stageIdx]}
+          </motion.span>
+          <DotLoader className="text-amber-600" />
+        </div>
+        <div className="mt-3 h-1 rounded-full bg-muted overflow-hidden">
+          <motion.div
+            className="h-full rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-emerald-500"
+            animate={{ x: ["-100%", "100%"] }}
+            transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+            style={{ width: "60%" }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
