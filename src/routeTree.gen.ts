@@ -23,6 +23,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated.billing'
 import { Route as AuthenticatedReportDocumentIdRouteImport } from './routes/_authenticated.report.$documentId'
 import { Route as AdminAdminUsersRouteImport } from './routes/_admin.admin.users'
+import { Route as AdminAdminPlansRouteImport } from './routes/_admin.admin.plans'
 import { Route as AdminAdminPaymentsRouteImport } from './routes/_admin.admin.payments'
 import { Route as AdminAdminDocumentsRouteImport } from './routes/_admin.admin.documents'
 import { Route as AdminAdminDashboardRouteImport } from './routes/_admin.admin.dashboard'
@@ -97,6 +98,11 @@ const AdminAdminUsersRoute = AdminAdminUsersRouteImport.update({
   path: '/admin/users',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAdminPlansRoute = AdminAdminPlansRouteImport.update({
+  id: '/admin/plans',
+  path: '/admin/plans',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAdminPaymentsRoute = AdminAdminPaymentsRouteImport.update({
   id: '/admin/payments',
   path: '/admin/payments',
@@ -133,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/admin/dashboard': typeof AdminAdminDashboardRoute
   '/admin/documents': typeof AdminAdminDocumentsRouteWithChildren
   '/admin/payments': typeof AdminAdminPaymentsRoute
+  '/admin/plans': typeof AdminAdminPlansRoute
   '/admin/users': typeof AdminAdminUsersRoute
   '/report/$documentId': typeof AuthenticatedReportDocumentIdRoute
   '/admin/documents/$documentId': typeof AdminAdminDocumentsDocumentIdRoute
@@ -151,6 +158,7 @@ export interface FileRoutesByTo {
   '/admin/dashboard': typeof AdminAdminDashboardRoute
   '/admin/documents': typeof AdminAdminDocumentsRouteWithChildren
   '/admin/payments': typeof AdminAdminPaymentsRoute
+  '/admin/plans': typeof AdminAdminPlansRoute
   '/admin/users': typeof AdminAdminUsersRoute
   '/report/$documentId': typeof AuthenticatedReportDocumentIdRoute
   '/admin/documents/$documentId': typeof AdminAdminDocumentsDocumentIdRoute
@@ -172,6 +180,7 @@ export interface FileRoutesById {
   '/_admin/admin/dashboard': typeof AdminAdminDashboardRoute
   '/_admin/admin/documents': typeof AdminAdminDocumentsRouteWithChildren
   '/_admin/admin/payments': typeof AdminAdminPaymentsRoute
+  '/_admin/admin/plans': typeof AdminAdminPlansRoute
   '/_admin/admin/users': typeof AdminAdminUsersRoute
   '/_authenticated/report/$documentId': typeof AuthenticatedReportDocumentIdRoute
   '/_admin/admin/documents/$documentId': typeof AdminAdminDocumentsDocumentIdRoute
@@ -192,6 +201,7 @@ export interface FileRouteTypes {
     | '/admin/dashboard'
     | '/admin/documents'
     | '/admin/payments'
+    | '/admin/plans'
     | '/admin/users'
     | '/report/$documentId'
     | '/admin/documents/$documentId'
@@ -210,6 +220,7 @@ export interface FileRouteTypes {
     | '/admin/dashboard'
     | '/admin/documents'
     | '/admin/payments'
+    | '/admin/plans'
     | '/admin/users'
     | '/report/$documentId'
     | '/admin/documents/$documentId'
@@ -230,6 +241,7 @@ export interface FileRouteTypes {
     | '/_admin/admin/dashboard'
     | '/_admin/admin/documents'
     | '/_admin/admin/payments'
+    | '/_admin/admin/plans'
     | '/_admin/admin/users'
     | '/_authenticated/report/$documentId'
     | '/_admin/admin/documents/$documentId'
@@ -345,6 +357,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAdminUsersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_admin/admin/plans': {
+      id: '/_admin/admin/plans'
+      path: '/admin/plans'
+      fullPath: '/admin/plans'
+      preLoaderRoute: typeof AdminAdminPlansRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_admin/admin/payments': {
       id: '/_admin/admin/payments'
       path: '/admin/payments'
@@ -391,6 +410,7 @@ interface AdminRouteChildren {
   AdminAdminDashboardRoute: typeof AdminAdminDashboardRoute
   AdminAdminDocumentsRoute: typeof AdminAdminDocumentsRouteWithChildren
   AdminAdminPaymentsRoute: typeof AdminAdminPaymentsRoute
+  AdminAdminPlansRoute: typeof AdminAdminPlansRoute
   AdminAdminUsersRoute: typeof AdminAdminUsersRoute
 }
 
@@ -398,6 +418,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAdminDashboardRoute: AdminAdminDashboardRoute,
   AdminAdminDocumentsRoute: AdminAdminDocumentsRouteWithChildren,
   AdminAdminPaymentsRoute: AdminAdminPaymentsRoute,
+  AdminAdminPlansRoute: AdminAdminPlansRoute,
   AdminAdminUsersRoute: AdminAdminUsersRoute,
 }
 

@@ -33,7 +33,11 @@ interface Plan {
   slug: string;
   credits: number;
   price: number;
+  currency?: string;
+  currency_symbol?: string;
   description: string | null;
+  features?: string[];
+  display_order?: number;
 }
 
 export const Route = createFileRoute("/")({
@@ -59,7 +63,13 @@ export const Route = createFileRoute("/")({
 function Landing() {
   const { data } = useQuery({
     queryKey: ["plans"],
-    queryFn: async () => (await api.get<{ plans: Plan[] }>("/plans")).data.plans,
+    queryFn: async () => {
+      const res = await api.get<{ plans: Plan[] }>("/user/plans");
+      return [...res.data.plans].sort(
+        (a, b) => (a.display_order ?? 0) - (b.display_order ?? 0),
+      );
+    },
+    staleTime: 5 * 60 * 1000,
   });
 
   return (
@@ -810,19 +820,25 @@ function Pricing({ plans }: { plans: Plan[] }) {
               )}
               <h3 className="text-xl font-semibold">{p.name}</h3>
               <div className="mt-4 flex items-baseline gap-1">
-                <span className="text-5xl font-bold text-brand tabular-nums">₹{p.price}</span>
+                <span className="text-5xl font-bold text-brand tabular-nums">
+                  {p.currency_symbol ?? "₹"}
+                  {p.price}
+                </span>
                 <span className="text-sm text-muted-foreground">one-time</span>
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
                 {p.description ?? `${p.credits} scan credits`}
               </p>
               <ul className="mt-6 space-y-2.5 text-sm">
-                {[
-                  `${p.credits} scan credits`,
-                  "AI + plagiarism detection",
-                  "Downloadable PDF report",
-                  "Inline grading & feedback",
-                ].map((li) => (
+                {(p.features && p.features.length > 0
+                  ? p.features
+                  : [
+                      `${p.credits} scan credits`,
+                      "AI + plagiarism detection",
+                      "Downloadable PDF report",
+                      "Inline grading & feedback",
+                    ]
+                ).map((li) => (
                   <li key={li} className="flex gap-2">
                     <div className="rounded-full bg-brand/10 p-0.5 mt-0.5 shrink-0">
                       <Check className="h-3 w-3 text-brand" strokeWidth={3} />

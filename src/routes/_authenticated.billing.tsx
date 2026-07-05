@@ -36,7 +36,11 @@ interface Plan {
   slug: string;
   credits: number;
   price: number;
+  currency?: string;
+  currency_symbol?: string;
   description: string | null;
+  features?: string[];
+  display_order?: number;
 }
 
 interface Payment {
@@ -62,7 +66,13 @@ export const Route = createFileRoute("/_authenticated/billing")({
 function BillingPage() {
   const plansQ = useQuery({
     queryKey: ["plans"],
-    queryFn: async () => (await api.get<{ plans: Plan[] }>("/plans")).data.plans,
+    queryFn: async () => {
+      const res = await api.get<{ plans: Plan[] }>("/user/plans");
+      return [...res.data.plans].sort(
+        (a, b) => (a.display_order ?? 0) - (b.display_order ?? 0),
+      );
+    },
+    staleTime: 5 * 60 * 1000,
   });
   const paymentsQ = useQuery({
     queryKey: ["my-payments"],
@@ -205,22 +215,28 @@ function PlanCard({
       )}
       <h3 className="text-lg font-semibold">{plan.name}</h3>
       <div className="mt-2 flex items-baseline gap-1">
-        <span className="text-3xl font-bold text-brand">₹{plan.price}</span>
+        <span className="text-3xl font-bold text-brand">
+          {plan.currency_symbol ?? "₹"}
+          {plan.price}
+        </span>
         <span className="text-sm text-muted-foreground">one-time</span>
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
         {plan.description ?? `${plan.credits} scan credits`}
       </p>
       <ul className="mt-4 space-y-2 text-sm flex-1">
-        <li className="flex items-center gap-2">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600" /> {plan.credits} scan credits
-        </li>
-        <li className="flex items-center gap-2">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600" /> AI + plagiarism detection
-        </li>
-        <li className="flex items-center gap-2">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600" /> Downloadable PDF reports
-        </li>
+        {(plan.features && plan.features.length > 0
+          ? plan.features
+          : [
+              `${plan.credits} scan credits`,
+              "AI + plagiarism detection",
+              "Downloadable PDF reports",
+            ]
+        ).map((f) => (
+          <li key={f} className="flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" /> {f}
+          </li>
+        ))}
       </ul>
       <Button
         onClick={onSelect}
@@ -354,7 +370,8 @@ function SubmitPaymentDialog({
             Submit payment for {plan?.name}
           </DialogTitle>
           <DialogDescription>
-            Send ₹{plan?.price} to our UPI / bank account, then submit your transaction ID and a
+            Send {plan?.currency_symbol ?? "₹"}
+            {plan?.price} to our UPI / bank account, then submit your transaction ID and a
             screenshot of the receipt. Credits are provisioned after admin approval.
           </DialogDescription>
         </DialogHeader>
@@ -370,11 +387,14 @@ function SubmitPaymentDialog({
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Amount</span>
-            <span className="font-medium text-brand">₹{plan?.price}</span>
+            <span className="font-medium text-brand">
+              {plan?.currency_symbol ?? "₹"}
+              {plan?.price}
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Pay to</span>
-            <span className="font-mono text-xs">turnitin-clone@upi</span>
+            <span className="font-mono text-xs">nak-detection@upi</span>
           </div>
         </div>
 

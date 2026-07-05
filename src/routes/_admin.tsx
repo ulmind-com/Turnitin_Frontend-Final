@@ -8,6 +8,7 @@ import {
   LogOut,
   Menu,
   ShieldCheck,
+  Tags,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuthStore, type AuthUser } from "@/lib/auth-store";
@@ -32,6 +33,7 @@ export const Route = createFileRoute("/_admin")({
 const nav = [
   { to: "/admin/dashboard", label: "Overview", icon: LayoutDashboard },
   { to: "/admin/payments", label: "Payments", icon: CreditCard },
+  { to: "/admin/plans", label: "Plans", icon: Tags },
   { to: "/admin/users", label: "Users", icon: Users },
   { to: "/admin/documents", label: "Documents", icon: FileText },
 ] as const;

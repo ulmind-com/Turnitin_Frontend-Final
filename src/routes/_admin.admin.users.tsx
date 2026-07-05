@@ -72,7 +72,8 @@ function UsersPage() {
 
   const plansQ = useQuery({
     queryKey: ["plans"],
-    queryFn: async () => (await api.get<{ plans: Plan[] }>("/plans")).data.plans,
+    queryFn: async () => (await api.get<{ plans: Plan[] }>("/user/plans")).data.plans,
+    staleTime: 5 * 60 * 1000,
   });
 
   return (
