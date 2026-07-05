@@ -134,6 +134,15 @@ function DocsPage() {
                     <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
                       {new Date(d.created_at).toLocaleDateString()}
                     </td>
+                    <td className="px-4 py-3 text-right">
+                      <Link
+                        to="/admin/documents/$documentId"
+                        params={{ documentId: d.id }}
+                        className="text-brand font-medium hover:underline"
+                      >
+                        View
+                      </Link>
+                    </td>
                   </tr>
                 ))}
               </tbody>
