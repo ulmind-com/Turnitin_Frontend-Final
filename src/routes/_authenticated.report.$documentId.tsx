@@ -216,10 +216,25 @@ function ReportView({
             <DropdownMenuTrigger asChild>
               <Button
                 disabled={scanFailed || !!downloading}
-                className="bg-brand text-brand-foreground hover:bg-brand/90 shadow-md shadow-brand/25"
+                className="bg-brand text-brand-foreground hover:bg-brand/90 shadow-md shadow-brand/25 min-w-[170px]"
               >
-                <Download className="h-4 w-4 mr-2" /> Download PDF
-                <ChevronDown className="h-4 w-4 ml-1 opacity-80" />
+                {downloading ? (
+                  <>
+                    <motion.span
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      className="inline-block"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                    </motion.span>
+                    Preparing <DotLoader className="ml-1" />
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-4 w-4 mr-2" /> Download PDF
+                    <ChevronDown className="h-4 w-4 ml-1 opacity-80" />
+                  </>
+                )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-64">
