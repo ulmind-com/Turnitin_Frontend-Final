@@ -135,14 +135,19 @@ function ReportView({
   const rightPaneRef = useRef<HTMLDivElement>(null);
   const [tab, setTab] = useState<"overview" | "plagiarism" | "ai" | "grade">("overview");
 
-  const downloadPdf = async () => {
+  const downloadPdf = async (kind: "combined" | "plagiarism" | "ai") => {
+    const path =
+      kind === "combined"
+        ? `/documents/${documentId}/download-report`
+        : `/documents/${documentId}/download-report/${kind}`;
+    const suffix = kind === "combined" ? "report" : `${kind}-report`;
     try {
-      const res = await api.get(`/documents/${documentId}/download-report`, { responseType: "blob" });
+      const res = await api.get(path, { responseType: "blob" });
       const blob = new Blob([res.data], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${report.file_name.replace(/\.[^.]+$/, "")}-report.pdf`;
+      a.download = `${report.file_name.replace(/\.[^.]+$/, "")}-${suffix}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
     } catch {
