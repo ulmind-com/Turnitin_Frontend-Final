@@ -92,30 +92,38 @@ function ReportPage() {
 function ScanningState({
   fileName, aiStatus, plagStatus,
 }: { fileName: string; aiStatus: string | null; plagStatus: string | null }) {
+  const aiDone = aiStatus === "completed" || aiStatus === "failed";
+  const plagDone = plagStatus === "completed" || plagStatus === "failed";
+  const bothDone = aiDone && plagDone;
+
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <Link to="/dashboard" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-brand mb-6">
+    <div className="p-6 md:p-10 max-w-4xl mx-auto">
+      <Link
+        to="/dashboard"
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-brand mb-6"
+      >
         <ArrowLeft className="h-4 w-4" /> Back
       </Link>
       <h1 className="text-2xl font-bold text-brand">{fileName}</h1>
-      <p className="text-muted-foreground mt-1">Scanning your document — this usually takes under a minute.</p>
+      <p className="text-muted-foreground mt-1">
+        Sit tight — our engine is working through your paper.
+      </p>
 
-      <div className="mt-8 grid md:grid-cols-2 gap-4">
+      <div className="mt-6 grid md:grid-cols-2 gap-3">
         <ScanPill label="Plagiarism" status={plagStatus} />
         <ScanPill label="AI Detection" status={aiStatus} />
       </div>
 
-      <div className="mt-8 space-y-3">
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0.3 }}
-            animate={{ opacity: [0.3, 0.7, 0.3] }}
-            transition={{ duration: 1.4, repeat: Infinity, delay: i * 0.1 }}
-            className="h-4 rounded bg-muted"
-            style={{ width: `${70 + Math.random() * 25}%` }}
-          />
-        ))}
+      <div className="mt-8">
+        <ProgressLoader
+          done={bothDone}
+          title={bothDone ? "Report ready" : "Analyzing your document"}
+          subtitle={
+            bothDone
+              ? "Loading your Feedback Studio…"
+              : "This usually takes 30–60 seconds."
+          }
+        />
       </div>
     </div>
   );
