@@ -93,13 +93,10 @@ function SettingsPage() {
           <h2 className="font-semibold">Profile</h2>
         </div>
 
-        {isLoading || !user ? (
-          <PageLoader label="Loading profile…" />
-        ) : (
-          <form
-            onSubmit={handleSubmit((v) => mutation.mutate(v))}
-            className="p-6 space-y-5"
-          >
+        <form
+          onSubmit={handleSubmit((v) => mutation.mutate(v))}
+          className="p-6 space-y-5"
+        >
             <div className="space-y-1.5">
               <Label htmlFor="name">Full name</Label>
               <Input id="name" {...register("name")} autoComplete="name" />
