@@ -134,9 +134,16 @@ function AdminDocDetailPage() {
             <span>Uploaded {new Date(data.created_at).toLocaleString()}</span>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <StatusBadge status={data.ai_scan_status} />
           <StatusBadge status={data.plagiarism_scan_status} />
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setConfirmOpen(true)}
+          >
+            <Trash2 className="h-4 w-4 mr-1" /> Delete
+          </Button>
         </div>
       </header>
 
