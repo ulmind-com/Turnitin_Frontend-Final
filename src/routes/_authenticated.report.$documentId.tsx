@@ -275,7 +275,7 @@ function ReportView({
       {/* Split screen */}
       <div className="flex-1 flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_440px] lg:overflow-hidden min-w-0">
         {/* Left: document viewer */}
-        <div className="overflow-y-auto overflow-x-hidden p-6 md:p-10 bg-surface min-w-0">
+        <div className="lg:overflow-y-auto overflow-x-hidden p-6 md:p-10 bg-surface min-w-0">
           <div className="max-w-3xl mx-auto rounded-xl bg-card border p-8 md:p-10 shadow-sm min-w-0 overflow-hidden">
             <div className="mb-6 pb-4 border-b flex items-center justify-between gap-3">
               <div className="min-w-0">
