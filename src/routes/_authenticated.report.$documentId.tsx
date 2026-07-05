@@ -136,6 +136,7 @@ function ReportView({
   const [activeChunk, setActiveChunk] = useState<number | null>(null);
   const rightPaneRef = useRef<HTMLDivElement>(null);
   const [tab, setTab] = useState<"overview" | "plagiarism" | "ai" | "grade">("overview");
+  const [downloading, setDownloading] = useState<null | "combined" | "plagiarism" | "ai">(null);
 
   const downloadPdf = async (kind: "combined" | "plagiarism" | "ai") => {
     const path =
@@ -143,6 +144,7 @@ function ReportView({
         ? `/documents/${documentId}/download-report`
         : `/documents/${documentId}/download-report/${kind}`;
     const suffix = kind === "combined" ? "report" : `${kind}-report`;
+    setDownloading(kind);
     try {
       const res = await api.get(path, { responseType: "blob" });
       const blob = new Blob([res.data], { type: "application/pdf" });
@@ -152,8 +154,11 @@ function ReportView({
       a.download = `${report.file_name.replace(/\.[^.]+$/, "")}-${suffix}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
+      toast.success("Report downloaded");
     } catch {
       toast.error("Could not download report");
+    } finally {
+      setDownloading(null);
     }
   };
 
