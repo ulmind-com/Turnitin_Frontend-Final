@@ -84,11 +84,16 @@ function DocsPage() {
 
       <div className="rounded-xl border bg-card overflow-hidden">
         {isLoading ? (
-          <div className="p-4 space-y-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
-            ))}
-          </div>
+          <AdminLoader
+            label="Loading documents"
+            sublabel="Fetching every paper uploaded to the platform."
+            stages={[
+              "Querying document index",
+              "Joining user records",
+              "Attaching scan results",
+              "Sorting by upload time",
+            ]}
+          />
         ) : paged.length === 0 ? (
           <EmptyState
             icon={FileText}
