@@ -64,10 +64,32 @@ function DocumentsPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [page, setPage] = useState(1);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
     queryKey: ["documents"],
     queryFn: async () => (await api.get<DocsResp>("/documents")).data,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/documents/${id}`);
+      return id;
+    },
+    onSuccess: (id) => {
+      queryClient.setQueryData<DocsResp>(["documents"], (prev) =>
+        prev
+          ? { ...prev, documents: prev.documents.filter((d) => d.id !== id), total: Math.max(0, prev.total - 1) }
+          : prev,
+      );
+      toast.success("Document deleted");
+      setDeleteId(null);
+    },
+    onError: () => {
+      toast.error("Failed to delete document");
+      setDeleteId(null);
+    },
   });
 
   const filtered = useMemo(() => {
