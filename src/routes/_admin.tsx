@@ -144,7 +144,7 @@ function AdminLayout() {
       </div>
 
       <footer className="border-t bg-white py-4 text-center text-xs text-muted-foreground">
-        © 2026 NAK Detection Tool Clone — Admin Console
+        © 2026 NAK Detection Tool — Admin Console
       </footer>
     </div>
   );

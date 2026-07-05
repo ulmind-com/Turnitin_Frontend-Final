@@ -1010,7 +1010,7 @@ function Footer() {
 
       <div className="border-t">
         <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-          <div>© 2026 NAK Detection Tool Clone. Academic integrity, reimagined.</div>
+          <div>© 2026 NAK Detection Tool. Academic integrity, reimagined.</div>
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1"><Lock className="h-3 w-3" /> SOC 2 · FERPA</span>
             <span>Made with care for educators</span>

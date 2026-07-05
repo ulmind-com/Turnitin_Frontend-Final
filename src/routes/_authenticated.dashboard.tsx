@@ -26,7 +26,7 @@ interface DashboardResp {
 }
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — NAK Detection Tool Clone" }] }),
+  head: () => ({ meta: [{ title: "Dashboard — NAK Detection Tool" }] }),
   component: Dashboard,
 });
 

@@ -22,7 +22,7 @@ const schema = z.object({
 type Form = z.infer<typeof schema>;
 
 export const Route = createFileRoute("/register")({
-  head: () => ({ meta: [{ title: "Create account — NAK Detection Tool Clone" }] }),
+  head: () => ({ meta: [{ title: "Create account — NAK Detection Tool" }] }),
   component: RegisterPage,
 });
 
