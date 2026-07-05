@@ -88,11 +88,16 @@ function PaymentList({ status }: { status: "pending" | "approved" | "rejected" }
 
   if (isLoading) {
     return (
-      <div className="space-y-3">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-40 rounded-xl" />
-        ))}
-      </div>
+      <AdminLoader
+        label={status === "pending" ? "Loading pending payments" : "Loading payment history"}
+        sublabel="Fetching payment records from the ledger."
+        stages={[
+          "Querying payments table",
+          "Attaching user details",
+          "Sorting by newest",
+          "Preparing cards",
+        ]}
+      />
     );
   }
 
