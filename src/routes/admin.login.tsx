@@ -18,7 +18,7 @@ const schema = z.object({
 type Form = z.infer<typeof schema>;
 
 export const Route = createFileRoute("/admin/login")({
-  head: () => ({ meta: [{ title: "Admin sign in — NAK Detection Tool Clone" }] }),
+  head: () => ({ meta: [{ title: "Admin sign in — NAK Detection Tool" }] }),
   component: AdminLogin,
 });
 

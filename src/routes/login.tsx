@@ -25,7 +25,7 @@ const searchSchema = z.object({ redirect: z.string().optional() });
 
 export const Route = createFileRoute("/login")({
   validateSearch: (s) => searchSchema.parse(s),
-  head: () => ({ meta: [{ title: "Sign in — NAK Detection Tool Clone" }] }),
+  head: () => ({ meta: [{ title: "Sign in — NAK Detection Tool" }] }),
   component: LoginPage,
 });
 
@@ -158,7 +158,7 @@ export function AuthShell({
           </motion.div>
         </main>
         <footer className="py-4 px-6 text-center text-xs text-muted-foreground">
-          © 2026 NAK Detection Tool Clone
+          © 2026 NAK Detection Tool
         </footer>
       </div>
 

@@ -53,7 +53,7 @@ interface ReportResp {
 }
 
 export const Route = createFileRoute("/_authenticated/report/$documentId")({
-  head: () => ({ meta: [{ title: "Feedback Studio — NAK Detection Tool Clone" }] }),
+  head: () => ({ meta: [{ title: "Feedback Studio — NAK Detection Tool" }] }),
   component: ReportPage,
 });
 

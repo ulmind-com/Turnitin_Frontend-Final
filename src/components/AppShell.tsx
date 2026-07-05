@@ -98,7 +98,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
 
       <footer className="border-t bg-background py-4 text-center text-xs text-muted-foreground">
-        © 2026 NAK Detection Tool Clone. Academic integrity, reimagined.
+        © 2026 NAK Detection Tool. Academic integrity, reimagined.
       </footer>
     </div>
   );

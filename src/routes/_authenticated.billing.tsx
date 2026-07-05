@@ -59,7 +59,7 @@ const MAX_SCREENSHOT_MB = 5;
 const IMG_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export const Route = createFileRoute("/_authenticated/billing")({
-  head: () => ({ meta: [{ title: "Billing — NAK Detection Tool Clone" }] }),
+  head: () => ({ meta: [{ title: "Billing — NAK Detection Tool" }] }),
   component: BillingPage,
 });
 
