@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useState, useMemo, useRef, useEffect } from "react";
-import { ArrowLeft, Download, ExternalLink, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Download, ExternalLink, AlertTriangle, ChevronDown, ChevronUp, FileText, Sparkles, FileDown } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { useDocumentPolling } from "@/hooks/use-document-polling";
@@ -13,6 +13,14 @@ import { ScoreRing } from "@/components/ScoreRing";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 interface ReportResp {
   document_id: string;
