@@ -133,23 +133,20 @@ function SettingsPage() {
                 )}
               </Button>
             </div>
-          </form>
-        )}
+        </form>
       </section>
 
-      {user && (
-        <section className="rounded-xl border bg-card">
-          <div className="px-6 py-4 border-b">
-            <h2 className="font-semibold">Account summary</h2>
-          </div>
-          <dl className="p-6 grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
-            <Info label="Role" value={user.role} />
-            <Info label="Status" value={user.account_status} />
-            <Info label="Credits" value={user.credits.toString()} />
-            <Info label="Active plan" value={user.active_plan?.name ?? "No plan"} />
-          </dl>
-        </section>
-      )}
+      <section className="rounded-xl border bg-card">
+        <div className="px-6 py-4 border-b">
+          <h2 className="font-semibold">Account summary</h2>
+        </div>
+        <dl className="p-6 grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
+          <Info label="Role" value={user.role} />
+          <Info label="Status" value={user.account_status} />
+          <Info label="Credits" value={user.credits.toString()} />
+          <Info label="Active plan" value={user.active_plan?.name ?? "No plan"} />
+        </dl>
+      </section>
     </div>
   );
 }
