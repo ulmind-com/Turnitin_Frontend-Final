@@ -6,7 +6,7 @@ import type { AxiosError } from "axios";
 import { CheckCircle2, XCircle, Clock, ExternalLink, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { AdminLoader } from "@/components/Loader";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/EmptyState";
 import {
