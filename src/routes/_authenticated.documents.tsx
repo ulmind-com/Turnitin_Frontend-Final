@@ -23,6 +23,7 @@ import {
 import { StatusBadge } from "@/components/StatusBadge";
 import { EmptyState } from "@/components/EmptyState";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageLoader } from "@/components/Loader";
 
 interface DocRow {
   id: string;
