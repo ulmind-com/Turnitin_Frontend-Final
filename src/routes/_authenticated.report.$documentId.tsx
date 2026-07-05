@@ -273,9 +273,9 @@ function ReportView({
       )}
 
       {/* Split screen */}
-      <div className="flex-1 grid lg:grid-cols-[minmax(0,1fr)_440px] overflow-hidden min-w-0">
+      <div className="flex-1 flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_440px] lg:overflow-hidden min-w-0">
         {/* Left: document viewer */}
-        <div className="overflow-y-auto overflow-x-hidden p-6 md:p-10 bg-surface min-w-0">
+        <div className="lg:overflow-y-auto overflow-x-hidden p-6 md:p-10 bg-surface min-w-0">
           <div className="max-w-3xl mx-auto rounded-xl bg-card border p-8 md:p-10 shadow-sm min-w-0 overflow-hidden">
             <div className="mb-6 pb-4 border-b flex items-center justify-between gap-3">
               <div className="min-w-0">
@@ -297,7 +297,7 @@ function ReportView({
         </div>
 
         {/* Right: sidebar */}
-        <div ref={rightPaneRef} className="border-l bg-background flex flex-col overflow-hidden">
+        <div ref={rightPaneRef} className="lg:border-l border-t lg:border-t-0 bg-background flex flex-col lg:overflow-hidden h-[75vh] lg:h-auto">
           <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)} className="flex-1 flex flex-col">
             <TabsList className="grid grid-cols-4 rounded-none border-b bg-background h-11">
               <TabsTrigger value="overview">Overview</TabsTrigger>
