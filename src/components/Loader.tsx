@@ -126,3 +126,253 @@ export function DotLoader({ className = "" }: { className?: string }) {
     </span>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* PROGRESS LOADER — animated %, stages, ring                         */
+/* ------------------------------------------------------------------ */
+
+interface ProgressLoaderProps {
+  /** When true, the loader eases toward 100% and shows a "Done" state. */
+  done?: boolean;
+  /** Ordered stages the loader cycles through. */
+  stages?: string[];
+  /** Approx seconds to reach 95% before `done` flips true. */
+  duration?: number;
+  title?: string;
+  subtitle?: string;
+}
+
+const DEFAULT_STAGES = [
+  "Extracting text from document",
+  "Chunking into 4-sentence windows",
+  "Running AI writing heuristics",
+  "Scanning web sources with Tavily",
+  "Cross-checking internal submissions",
+  "Compiling originality report",
+];
+
+/**
+ * Premium progress loader with an animated ring, a rising percentage,
+ * a stage list that ticks through the pipeline, and a shimmering track.
+ * `done=true` snaps to 100% and shows a success state.
+ */
+export function ProgressLoader({
+  done = false,
+  stages = DEFAULT_STAGES,
+  duration = 45,
+  title = "Scanning your document",
+  subtitle = "This usually takes under a minute.",
+}: ProgressLoaderProps) {
+  const [pct, setPct] = useState(0);
+  const [stageIdx, setStageIdx] = useState(0);
+
+  // Ease toward 95% over `duration`, then snap to 100% when done.
+  useEffect(() => {
+    if (done) {
+      setPct(100);
+      setStageIdx(stages.length - 1);
+      return;
+    }
+    const start = Date.now();
+    const target = 95;
+    const id = window.setInterval(() => {
+      const t = Math.min(1, (Date.now() - start) / (duration * 1000));
+      // easeOutQuart
+      const eased = 1 - Math.pow(1 - t, 4);
+      setPct(Math.min(target, eased * target));
+    }, 120);
+    return () => window.clearInterval(id);
+  }, [done, duration, stages.length]);
+
+  // Cycle the "currently running" stage label.
+  useEffect(() => {
+    if (done) return;
+    const per = (duration * 1000) / stages.length;
+    const id = window.setInterval(() => {
+      setStageIdx((i) => Math.min(stages.length - 1, i + 1));
+    }, per);
+    return () => window.clearInterval(id);
+  }, [done, duration, stages.length]);
+
+  const size = 180;
+  const stroke = 12;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const shownPct = Math.round(pct);
+
+  return (
+    <div className="w-full max-w-xl mx-auto rounded-2xl border bg-card p-8 md:p-10 shadow-xl shadow-brand/5">
+      <div className="flex flex-col items-center text-center">
+        {/* Ring */}
+        <div className="relative" style={{ width: size, height: size }}>
+          {/* Halo */}
+          <motion.div
+            className="absolute inset-2 rounded-full blur-2xl"
+            style={{ background: "radial-gradient(circle, var(--brand), transparent 70%)" }}
+            animate={{ opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+          <svg width={size} height={size} className="-rotate-90 relative">
+            <defs>
+              <linearGradient id="pl-grad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stopColor="var(--brand)" />
+                <stop offset="0.5" stopColor="var(--ai)" />
+                <stop offset="1" stopColor="var(--plag)" />
+              </linearGradient>
+            </defs>
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={r}
+              strokeWidth={stroke}
+              stroke="var(--muted)"
+              fill="none"
+            />
+            <motion.circle
+              cx={size / 2}
+              cy={size / 2}
+              r={r}
+              strokeWidth={stroke}
+              stroke="url(#pl-grad)"
+              fill="none"
+              strokeLinecap="round"
+              strokeDasharray={c}
+              animate={{ strokeDashoffset: c - (c * pct) / 100 }}
+              transition={{ type: "spring", stiffness: 40, damping: 20 }}
+            />
+          </svg>
+          {/* Rotating tick */}
+          {!done && (
+            <motion.div
+              className="absolute inset-0"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            >
+              <span
+                className="absolute h-3 w-3 rounded-full bg-brand shadow-lg shadow-brand/50"
+                style={{
+                  top: stroke / 2 - 2,
+                  left: size / 2 - 6,
+                }}
+              />
+            </motion.div>
+          )}
+          {/* Center label */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <motion.span
+              key={shownPct}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-4xl md:text-5xl font-bold text-brand tabular-nums"
+            >
+              {shownPct}
+              <span className="text-2xl align-top">%</span>
+            </motion.span>
+            <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-semibold mt-1">
+              {done ? "Complete" : "Analyzing"}
+            </span>
+          </div>
+        </div>
+
+        {/* Title */}
+        <h2 className="mt-6 text-xl font-bold text-brand">{title}</h2>
+        <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
+
+        {/* Shimmering track */}
+        <div className="mt-6 w-full h-1.5 rounded-full bg-muted overflow-hidden">
+          <motion.div
+            className="h-full rounded-full"
+            style={{
+              background:
+                "linear-gradient(90deg, var(--brand), var(--ai), var(--plag))",
+              backgroundSize: "200% 100%",
+            }}
+            animate={{ backgroundPosition: ["0% 0%", "200% 0%"] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            initial={false}
+          />
+        </div>
+
+        {/* Stage list */}
+        <ul className="mt-6 w-full space-y-2 text-left">
+          {stages.map((s, i) => {
+            const state: "done" | "active" | "pending" =
+              done || i < stageIdx ? "done" : i === stageIdx ? "active" : "pending";
+            return (
+              <li key={s} className="flex items-center gap-3">
+                <span
+                  className={`h-5 w-5 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold ${
+                    state === "done"
+                      ? "bg-emerald-500 text-white"
+                      : state === "active"
+                      ? "bg-brand text-brand-foreground"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {state === "done" ? (
+                    <svg viewBox="0 0 12 12" className="h-3 w-3" fill="none">
+                      <path
+                        d="M2 6l3 3 5-6"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  ) : state === "active" ? (
+                    <motion.span
+                      className="h-1.5 w-1.5 rounded-full bg-white"
+                      animate={{ scale: [0.7, 1.2, 0.7] }}
+                      transition={{ duration: 1, repeat: Infinity }}
+                    />
+                  ) : (
+                    i + 1
+                  )}
+                </span>
+                <span
+                  className={`text-sm ${
+                    state === "active"
+                      ? "text-foreground font-medium"
+                      : state === "done"
+                      ? "text-muted-foreground line-through"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {s}
+                </span>
+                {state === "active" && <DotLoader className="text-brand ml-1" />}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* PAGE LOADER — centered orbit + label, for route data loading       */
+/* ------------------------------------------------------------------ */
+
+export function PageLoader({ label = "Loading…" }: { label?: string }) {
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="min-h-[60vh] flex flex-col items-center justify-center gap-4 p-8"
+      >
+        <Loader size={72} />
+        <motion.p
+          className="text-sm text-muted-foreground font-medium"
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 1.6, repeat: Infinity }}
+        >
+          {label}
+        </motion.p>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
