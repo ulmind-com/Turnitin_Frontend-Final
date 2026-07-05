@@ -59,10 +59,33 @@ export const Route = createFileRoute("/_admin/admin/documents/$documentId")({
 
 function AdminDocDetailPage() {
   const { documentId } = Route.useParams();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
   const { data, isLoading } = useQuery({
     queryKey: ["admin-doc", documentId],
     queryFn: async () =>
       (await api.get<AdminDocDetail>(`/admin/documents/${documentId}`)).data,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      await api.delete(`/admin/documents/${documentId}`);
+    },
+    onSuccess: () => {
+      queryClient.setQueryData<AdminDocDetail[]>(["admin-documents"], (prev) =>
+        prev ? prev.filter((d) => d.id !== documentId) : prev,
+      );
+      queryClient.invalidateQueries({ queryKey: ["admin-documents"] });
+      toast.success("Document deleted");
+      setConfirmOpen(false);
+      navigate({ to: "/admin/documents" });
+    },
+    onError: () => {
+      toast.error("Failed to delete document");
+      setConfirmOpen(false);
+    },
   });
 
   if (isLoading || !data) {
