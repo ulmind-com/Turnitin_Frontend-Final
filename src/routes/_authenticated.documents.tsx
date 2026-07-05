@@ -213,13 +213,23 @@ function DocumentsPage() {
                       {new Date(d.created_at).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Link
-                        to="/report/$documentId"
-                        params={{ documentId: d.id }}
-                        className="text-brand font-medium hover:underline"
-                      >
-                        View report
-                      </Link>
+                      <div className="inline-flex items-center gap-3 justify-end">
+                        <Link
+                          to="/report/$documentId"
+                          params={{ documentId: d.id }}
+                          className="text-brand font-medium hover:underline"
+                        >
+                          View report
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => setDeleteId(d.id)}
+                          className="text-muted-foreground hover:text-destructive transition-colors"
+                          aria-label={`Delete ${d.original_file_name}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
