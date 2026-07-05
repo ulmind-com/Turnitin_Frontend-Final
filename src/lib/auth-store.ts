@@ -49,7 +49,9 @@ export const useAuthStore = create<AuthState>()(
     {
       name: "tc-auth",
       storage: createJSONStorage(() =>
-        typeof window !== "undefined" ? window.localStorage : (noopStorage as Storage),
+        typeof window !== "undefined"
+          ? window.localStorage
+          : (noopStorage as unknown as Storage),
       ),
     },
   ),
