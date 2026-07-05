@@ -7,7 +7,7 @@ import { Search, Ban, Coins, Package, CheckCircle2, Loader2, RotateCcw } from "l
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
+import { AdminLoader } from "@/components/Loader";
 import {
   Select,
   SelectContent,
@@ -109,11 +109,16 @@ function UsersPage() {
 
       <div className="rounded-xl border bg-card overflow-hidden">
         {isLoading ? (
-          <div className="p-4 space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-14 w-full" />
-            ))}
-          </div>
+          <AdminLoader
+            label="Loading users"
+            sublabel="Fetching accounts matching your filters."
+            stages={[
+              "Applying filters",
+              "Querying user directory",
+              "Attaching plan & credits",
+              "Preparing table",
+            ]}
+          />
         ) : !data?.length ? (
           <EmptyState
             icon={Search}

@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Users, FileText, CheckCircle2, Clock, Coins } from "lucide-react";
 import { api } from "@/lib/api";
-import { Skeleton } from "@/components/ui/skeleton";
+import { AdminLoader } from "@/components/Loader";
 
 interface AdminDashboardResp {
   total_users: number;
@@ -42,11 +42,16 @@ function AdminDashboard() {
       </div>
 
       {isLoading || !data ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-28 rounded-xl" />
-          ))}
-        </div>
+        <AdminLoader
+          label="Loading overview"
+          sublabel="Refreshing platform metrics from the database."
+          stages={[
+            "Authenticating admin session",
+            "Aggregating user counts",
+            "Tallying scans & payments",
+            "Building plan breakdown",
+          ]}
+        />
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">

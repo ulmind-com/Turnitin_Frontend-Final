@@ -13,8 +13,7 @@ import { useAuthStore, type AuthUser } from "@/lib/auth-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
-import { PageLoader } from "@/components/Loader";
+import { PageLoader, LoaderOverlay } from "@/components/Loader";
 
 const schema = z.object({
   name: z.string().min(2, "Name is too short").max(80),
@@ -70,8 +69,13 @@ function SettingsPage() {
     },
   });
 
+  if (isLoading || !user) {
+    return <PageLoader label="Loading your account settings…" />;
+  }
+
   return (
     <div className="p-6 md:p-8 max-w-3xl mx-auto space-y-6">
+      {mutation.isPending && <LoaderOverlay label="Saving your changes…" />}
       <div className="flex items-center gap-3">
         <div className="h-10 w-10 rounded-lg bg-brand/10 text-brand grid place-items-center">
           <UserCog className="h-5 w-5" />
@@ -89,13 +93,10 @@ function SettingsPage() {
           <h2 className="font-semibold">Profile</h2>
         </div>
 
-        {isLoading || !user ? (
-          <PageLoader label="Loading profile…" />
-        ) : (
-          <form
-            onSubmit={handleSubmit((v) => mutation.mutate(v))}
-            className="p-6 space-y-5"
-          >
+        <form
+          onSubmit={handleSubmit((v) => mutation.mutate(v))}
+          className="p-6 space-y-5"
+        >
             <div className="space-y-1.5">
               <Label htmlFor="name">Full name</Label>
               <Input id="name" {...register("name")} autoComplete="name" />
@@ -132,23 +133,20 @@ function SettingsPage() {
                 )}
               </Button>
             </div>
-          </form>
-        )}
+        </form>
       </section>
 
-      {user && (
-        <section className="rounded-xl border bg-card">
-          <div className="px-6 py-4 border-b">
-            <h2 className="font-semibold">Account summary</h2>
-          </div>
-          <dl className="p-6 grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
-            <Info label="Role" value={user.role} />
-            <Info label="Status" value={user.account_status} />
-            <Info label="Credits" value={user.credits.toString()} />
-            <Info label="Active plan" value={user.active_plan?.name ?? "No plan"} />
-          </dl>
-        </section>
-      )}
+      <section className="rounded-xl border bg-card">
+        <div className="px-6 py-4 border-b">
+          <h2 className="font-semibold">Account summary</h2>
+        </div>
+        <dl className="p-6 grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
+          <Info label="Role" value={user.role} />
+          <Info label="Status" value={user.account_status} />
+          <Info label="Credits" value={user.credits.toString()} />
+          <Info label="Active plan" value={user.active_plan?.name ?? "No plan"} />
+        </dl>
+      </section>
     </div>
   );
 }

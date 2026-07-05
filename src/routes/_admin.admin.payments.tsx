@@ -6,7 +6,7 @@ import type { AxiosError } from "axios";
 import { CheckCircle2, XCircle, Clock, ExternalLink, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { AdminLoader } from "@/components/Loader";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/EmptyState";
 import {
@@ -88,11 +88,16 @@ function PaymentList({ status }: { status: "pending" | "approved" | "rejected" }
 
   if (isLoading) {
     return (
-      <div className="space-y-3">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-40 rounded-xl" />
-        ))}
-      </div>
+      <AdminLoader
+        label={status === "pending" ? "Loading pending payments" : "Loading payment history"}
+        sublabel="Fetching payment records from the ledger."
+        stages={[
+          "Querying payments table",
+          "Attaching user details",
+          "Sorting by newest",
+          "Preparing cards",
+        ]}
+      />
     );
   }
 
