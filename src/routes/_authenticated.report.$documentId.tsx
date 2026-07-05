@@ -176,6 +176,19 @@ function ReportView({
 
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem-2.5rem)] min-h-[600px]">
+      <AnimatePresence>
+        {downloading && (
+          <LoaderOverlay
+            label={
+              downloading === "combined"
+                ? "Preparing combined report…"
+                : downloading === "plagiarism"
+                ? "Preparing plagiarism report…"
+                : "Preparing AI detection report…"
+            }
+          />
+        )}
+      </AnimatePresence>
       {/* Header */}
       <div className="border-b bg-background px-4 md:px-6 py-3 flex items-center gap-3 flex-wrap">
         <Link to="/dashboard">
