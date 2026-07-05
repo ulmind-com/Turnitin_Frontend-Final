@@ -90,10 +90,7 @@ function SettingsPage() {
         </div>
 
         {isLoading || !user ? (
-          <div className="p-6 space-y-4">
-            <Skeleton className="h-10" />
-            <Skeleton className="h-10" />
-          </div>
+          <PageLoader label="Loading profile…" />
         ) : (
           <form
             onSubmit={handleSubmit((v) => mutation.mutate(v))}
