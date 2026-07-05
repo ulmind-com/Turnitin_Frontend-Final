@@ -21,6 +21,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { LoaderOverlay } from "@/components/Loader";
+import { AnimatePresence } from "framer-motion";
 
 interface ReportResp {
   document_id: string;
