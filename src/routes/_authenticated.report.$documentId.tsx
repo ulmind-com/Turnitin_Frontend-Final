@@ -21,6 +21,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { LoaderOverlay } from "@/components/Loader";
+import { AnimatePresence } from "framer-motion";
 
 interface ReportResp {
   document_id: string;
@@ -134,6 +136,7 @@ function ReportView({
   const [activeChunk, setActiveChunk] = useState<number | null>(null);
   const rightPaneRef = useRef<HTMLDivElement>(null);
   const [tab, setTab] = useState<"overview" | "plagiarism" | "ai" | "grade">("overview");
+  const [downloading, setDownloading] = useState<null | "combined" | "plagiarism" | "ai">(null);
 
   const downloadPdf = async (kind: "combined" | "plagiarism" | "ai") => {
     const path =
@@ -141,6 +144,7 @@ function ReportView({
         ? `/documents/${documentId}/download-report`
         : `/documents/${documentId}/download-report/${kind}`;
     const suffix = kind === "combined" ? "report" : `${kind}-report`;
+    setDownloading(kind);
     try {
       const res = await api.get(path, { responseType: "blob" });
       const blob = new Blob([res.data], { type: "application/pdf" });
@@ -150,8 +154,11 @@ function ReportView({
       a.download = `${report.file_name.replace(/\.[^.]+$/, "")}-${suffix}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
+      toast.success("Report downloaded");
     } catch {
       toast.error("Could not download report");
+    } finally {
+      setDownloading(null);
     }
   };
 
@@ -169,6 +176,19 @@ function ReportView({
 
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem-2.5rem)] min-h-[600px]">
+      <AnimatePresence>
+        {downloading && (
+          <LoaderOverlay
+            label={
+              downloading === "combined"
+                ? "Preparing combined report…"
+                : downloading === "plagiarism"
+                ? "Preparing plagiarism report…"
+                : "Preparing AI detection report…"
+            }
+          />
+        )}
+      </AnimatePresence>
       {/* Header */}
       <div className="border-b bg-background px-4 md:px-6 py-3 flex items-center gap-3 flex-wrap">
         <Link to="/dashboard">
@@ -187,8 +207,8 @@ function ReportView({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
-                disabled={scanFailed}
-                className="bg-brand text-brand-foreground hover:bg-brand/90"
+                disabled={scanFailed || !!downloading}
+                className="bg-brand text-brand-foreground hover:bg-brand/90 shadow-md shadow-brand/25"
               >
                 <Download className="h-4 w-4 mr-2" /> Download PDF
                 <ChevronDown className="h-4 w-4 ml-1 opacity-80" />
