@@ -183,7 +183,7 @@ function ReportView({
     doc.ai_scan_status === "failed" || doc.plagiarism_scan_status === "failed";
 
   return (
-    <div className="flex flex-col h-[calc(100vh-3.5rem-2.5rem)] min-h-[600px]">
+    <div className="flex flex-col lg:h-[calc(100vh-3.5rem-2.5rem)] lg:min-h-[600px]">
       <AnimatePresence>
         {downloading && (
           <LoaderOverlay
@@ -297,8 +297,8 @@ function ReportView({
         </div>
 
         {/* Right: sidebar */}
-        <div ref={rightPaneRef} className="lg:border-l border-t lg:border-t-0 bg-background flex flex-col lg:overflow-hidden h-[75vh] lg:h-auto">
-          <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)} className="flex-1 flex flex-col">
+        <div ref={rightPaneRef} className="lg:border-l border-t lg:border-t-0 bg-background flex flex-col lg:overflow-hidden">
+          <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)} className="flex-1 flex flex-col lg:min-h-0">
             <TabsList className="grid grid-cols-4 rounded-none border-b bg-background h-11">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="plagiarism">Sources</TabsTrigger>
