@@ -132,11 +132,7 @@ function DocumentsPage() {
 
       <section className="rounded-xl border bg-card overflow-hidden">
         {isLoading ? (
-          <div className="p-4 space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
-            ))}
-          </div>
+          <PageLoader label="Fetching your documents…" />
         ) : paged.length === 0 ? (
           <EmptyState
             icon={FileText}
