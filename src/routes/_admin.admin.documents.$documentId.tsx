@@ -54,10 +54,17 @@ function AdminDocDetailPage() {
 
   if (isLoading || !data) {
     return (
-      <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-4">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-40" />
-        <Skeleton className="h-96" />
+      <div className="p-6 md:p-8 max-w-6xl mx-auto">
+        <AdminLoader
+          label="Loading document"
+          sublabel="Fetching the full scan report and author metadata."
+          stages={[
+            "Fetching document record",
+            "Loading extracted text",
+            "Attaching AI + plagiarism results",
+            "Rendering report",
+          ]}
+        />
       </div>
     );
   }
