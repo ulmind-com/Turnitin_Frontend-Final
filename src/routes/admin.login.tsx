@@ -34,7 +34,7 @@ function AdminLogin() {
     onSuccess: (data) => {
       setTokens(data.access_token, data.refresh_token);
       toast.success("Admin session started");
-      navigate({ to: "/admin/dashboard" as "/dashboard" });
+      navigate({ to: "/admin/dashboard" });
     },
     onError: (err: AxiosError<{ detail?: string }>) => {
       toast.error("Admin sign-in failed", { description: err.response?.data?.detail ?? "Unauthorized" });
