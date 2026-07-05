@@ -297,7 +297,7 @@ function ReportView({
         </div>
 
         {/* Right: sidebar */}
-        <div ref={rightPaneRef} className="border-l bg-background flex flex-col overflow-hidden">
+        <div ref={rightPaneRef} className="lg:border-l border-t lg:border-t-0 bg-background flex flex-col lg:overflow-hidden h-[75vh] lg:h-auto">
           <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)} className="flex-1 flex flex-col">
             <TabsList className="grid grid-cols-4 rounded-none border-b bg-background h-11">
               <TabsTrigger value="overview">Overview</TabsTrigger>
