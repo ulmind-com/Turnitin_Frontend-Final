@@ -7,7 +7,7 @@ import { Search, Ban, Coins, Package, CheckCircle2, Loader2, RotateCcw } from "l
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
+import { AdminLoader } from "@/components/Loader";
 import {
   Select,
   SelectContent,
