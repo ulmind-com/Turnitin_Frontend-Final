@@ -183,7 +183,7 @@ function ReportView({
     doc.ai_scan_status === "failed" || doc.plagiarism_scan_status === "failed";
 
   return (
-    <div className="flex flex-col h-[calc(100vh-3.5rem-2.5rem)] min-h-[600px]">
+    <div className="flex flex-col lg:h-[calc(100vh-3.5rem-2.5rem)] lg:min-h-[600px]">
       <AnimatePresence>
         {downloading && (
           <LoaderOverlay
