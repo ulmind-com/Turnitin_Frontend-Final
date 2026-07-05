@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { FileText, Search } from "lucide-react";
@@ -110,6 +110,7 @@ function DocsPage() {
                   <th className="px-4 py-3 font-medium">AI %</th>
                   <th className="px-4 py-3 font-medium">Plag %</th>
                   <th className="px-4 py-3 font-medium">Uploaded</th>
+                  <th className="px-4 py-3 font-medium text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
