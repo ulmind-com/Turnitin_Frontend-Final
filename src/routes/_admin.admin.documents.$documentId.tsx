@@ -1,10 +1,23 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, FileText, User as UserIcon, AlertTriangle } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { ArrowLeft, FileText, User as UserIcon, AlertTriangle, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { AdminLoader } from "@/components/Loader";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ScoreRing } from "@/components/ScoreRing";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface AdminDocDetail {
   id: string;
@@ -46,10 +59,33 @@ export const Route = createFileRoute("/_admin/admin/documents/$documentId")({
 
 function AdminDocDetailPage() {
   const { documentId } = Route.useParams();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
   const { data, isLoading } = useQuery({
     queryKey: ["admin-doc", documentId],
     queryFn: async () =>
       (await api.get<AdminDocDetail>(`/admin/documents/${documentId}`)).data,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      await api.delete(`/admin/documents/${documentId}`);
+    },
+    onSuccess: () => {
+      queryClient.setQueryData<AdminDocDetail[]>(["admin-documents"], (prev) =>
+        prev ? prev.filter((d) => d.id !== documentId) : prev,
+      );
+      queryClient.invalidateQueries({ queryKey: ["admin-documents"] });
+      toast.success("Document deleted");
+      setConfirmOpen(false);
+      navigate({ to: "/admin/documents" });
+    },
+    onError: () => {
+      toast.error("Failed to delete document");
+      setConfirmOpen(false);
+    },
   });
 
   if (isLoading || !data) {
@@ -98,9 +134,16 @@ function AdminDocDetailPage() {
             <span>Uploaded {new Date(data.created_at).toLocaleString()}</span>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <StatusBadge status={data.ai_scan_status} />
           <StatusBadge status={data.plagiarism_scan_status} />
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setConfirmOpen(true)}
+          >
+            <Trash2 className="h-4 w-4 mr-1" /> Delete
+          </Button>
         </div>
       </header>
 
@@ -198,6 +241,30 @@ function AdminDocDetailPage() {
           {data.extracted_text}
         </pre>
       </section>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this document?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this document? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteMutation.isPending}
+              onClick={(e) => {
+                e.preventDefault();
+                deleteMutation.mutate();
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteMutation.isPending ? "Deleting…" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

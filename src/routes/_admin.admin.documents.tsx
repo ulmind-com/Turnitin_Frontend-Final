@@ -1,12 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { FileText, Search } from "lucide-react";
+import { FileText, Search, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { AdminLoader } from "@/components/Loader";
 import { StatusBadge } from "@/components/StatusBadge";
 import { EmptyState } from "@/components/EmptyState";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Pagination,
   PaginationContent,
@@ -39,10 +50,30 @@ export const Route = createFileRoute("/_admin/admin/documents")({
 function DocsPage() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-documents"],
     queryFn: async () => (await api.get<{ documents: AdminDoc[] }>("/admin/documents")).data.documents,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/admin/documents/${id}`);
+      return id;
+    },
+    onSuccess: (id) => {
+      queryClient.setQueryData<AdminDoc[]>(["admin-documents"], (prev) =>
+        prev ? prev.filter((d) => d.id !== id) : prev,
+      );
+      toast.success("Document deleted");
+      setDeleteId(null);
+    },
+    onError: () => {
+      toast.error("Failed to delete document");
+      setDeleteId(null);
+    },
   });
 
   const filtered = useMemo(() => {
@@ -140,13 +171,23 @@ function DocsPage() {
                       {new Date(d.created_at).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Link
-                        to="/admin/documents/$documentId"
-                        params={{ documentId: d.id }}
-                        className="text-brand font-medium hover:underline"
-                      >
-                        View
-                      </Link>
+                      <div className="inline-flex items-center gap-3 justify-end">
+                        <Link
+                          to="/admin/documents/$documentId"
+                          params={{ documentId: d.id }}
+                          className="text-brand font-medium hover:underline"
+                        >
+                          View
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => setDeleteId(d.id)}
+                          className="text-muted-foreground hover:text-destructive transition-colors"
+                          aria-label={`Delete ${d.original_file_name}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -187,6 +228,30 @@ function DocsPage() {
           </PaginationContent>
         </Pagination>
       )}
+
+      <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this document?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this document? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteMutation.isPending}
+              onClick={(e) => {
+                e.preventDefault();
+                if (deleteId) deleteMutation.mutate(deleteId);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteMutation.isPending ? "Deleting…" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
