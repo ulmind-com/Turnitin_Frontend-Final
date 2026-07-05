@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { FileText, Search } from "lucide-react";
@@ -110,6 +110,7 @@ function DocsPage() {
                   <th className="px-4 py-3 font-medium">AI %</th>
                   <th className="px-4 py-3 font-medium">Plag %</th>
                   <th className="px-4 py-3 font-medium">Uploaded</th>
+                  <th className="px-4 py-3 font-medium text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -132,6 +133,15 @@ function DocsPage() {
                     </td>
                     <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
                       {new Date(d.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Link
+                        to="/admin/documents/$documentId"
+                        params={{ documentId: d.id }}
+                        className="text-brand font-medium hover:underline"
+                      >
+                        View
+                      </Link>
                     </td>
                   </tr>
                 ))}

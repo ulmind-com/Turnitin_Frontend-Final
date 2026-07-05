@@ -17,6 +17,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AuthenticatedUploadRouteImport } from './routes/_authenticated.upload'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated.settings'
 import { Route as AuthenticatedDocumentsRouteImport } from './routes/_authenticated.documents'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated.billing'
@@ -25,6 +26,7 @@ import { Route as AdminAdminUsersRouteImport } from './routes/_admin.admin.users
 import { Route as AdminAdminPaymentsRouteImport } from './routes/_admin.admin.payments'
 import { Route as AdminAdminDocumentsRouteImport } from './routes/_admin.admin.documents'
 import { Route as AdminAdminDashboardRouteImport } from './routes/_admin.admin.dashboard'
+import { Route as AdminAdminDocumentsDocumentIdRouteImport } from './routes/_admin.admin.documents.$documentId'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
@@ -62,6 +64,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
 const AuthenticatedUploadRoute = AuthenticatedUploadRouteImport.update({
   id: '/upload',
   path: '/upload',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedDocumentsRoute = AuthenticatedDocumentsRouteImport.update({
@@ -105,6 +112,12 @@ const AdminAdminDashboardRoute = AdminAdminDashboardRouteImport.update({
   path: '/admin/dashboard',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAdminDocumentsDocumentIdRoute =
+  AdminAdminDocumentsDocumentIdRouteImport.update({
+    id: '/$documentId',
+    path: '/$documentId',
+    getParentRoute: () => AdminAdminDocumentsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -113,14 +126,16 @@ export interface FileRoutesByFullPath {
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/upload': typeof AuthenticatedUploadRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
-  '/admin/documents': typeof AdminAdminDocumentsRoute
+  '/admin/documents': typeof AdminAdminDocumentsRouteWithChildren
   '/admin/payments': typeof AdminAdminPaymentsRoute
   '/admin/users': typeof AdminAdminUsersRoute
   '/report/$documentId': typeof AuthenticatedReportDocumentIdRoute
+  '/admin/documents/$documentId': typeof AdminAdminDocumentsDocumentIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -129,14 +144,16 @@ export interface FileRoutesByTo {
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/documents': typeof AuthenticatedDocumentsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/upload': typeof AuthenticatedUploadRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin': typeof AdminIndexRoute
   '/admin/dashboard': typeof AdminAdminDashboardRoute
-  '/admin/documents': typeof AdminAdminDocumentsRoute
+  '/admin/documents': typeof AdminAdminDocumentsRouteWithChildren
   '/admin/payments': typeof AdminAdminPaymentsRoute
   '/admin/users': typeof AdminAdminUsersRoute
   '/report/$documentId': typeof AuthenticatedReportDocumentIdRoute
+  '/admin/documents/$documentId': typeof AdminAdminDocumentsDocumentIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -148,14 +165,16 @@ export interface FileRoutesById {
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/documents': typeof AuthenticatedDocumentsRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/upload': typeof AuthenticatedUploadRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/': typeof AdminIndexRoute
   '/_admin/admin/dashboard': typeof AdminAdminDashboardRoute
-  '/_admin/admin/documents': typeof AdminAdminDocumentsRoute
+  '/_admin/admin/documents': typeof AdminAdminDocumentsRouteWithChildren
   '/_admin/admin/payments': typeof AdminAdminPaymentsRoute
   '/_admin/admin/users': typeof AdminAdminUsersRoute
   '/_authenticated/report/$documentId': typeof AuthenticatedReportDocumentIdRoute
+  '/_admin/admin/documents/$documentId': typeof AdminAdminDocumentsDocumentIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -166,6 +185,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/dashboard'
     | '/documents'
+    | '/settings'
     | '/upload'
     | '/admin/login'
     | '/admin/'
@@ -174,6 +194,7 @@ export interface FileRouteTypes {
     | '/admin/payments'
     | '/admin/users'
     | '/report/$documentId'
+    | '/admin/documents/$documentId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -182,6 +203,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/dashboard'
     | '/documents'
+    | '/settings'
     | '/upload'
     | '/admin/login'
     | '/admin'
@@ -190,6 +212,7 @@ export interface FileRouteTypes {
     | '/admin/payments'
     | '/admin/users'
     | '/report/$documentId'
+    | '/admin/documents/$documentId'
   id:
     | '__root__'
     | '/'
@@ -200,6 +223,7 @@ export interface FileRouteTypes {
     | '/_authenticated/billing'
     | '/_authenticated/dashboard'
     | '/_authenticated/documents'
+    | '/_authenticated/settings'
     | '/_authenticated/upload'
     | '/admin/login'
     | '/admin/'
@@ -208,6 +232,7 @@ export interface FileRouteTypes {
     | '/_admin/admin/payments'
     | '/_admin/admin/users'
     | '/_authenticated/report/$documentId'
+    | '/_admin/admin/documents/$documentId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -278,6 +303,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUploadRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/documents': {
       id: '/_authenticated/documents'
       path: '/documents'
@@ -334,19 +366,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAdminDashboardRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_admin/admin/documents/$documentId': {
+      id: '/_admin/admin/documents/$documentId'
+      path: '/$documentId'
+      fullPath: '/admin/documents/$documentId'
+      preLoaderRoute: typeof AdminAdminDocumentsDocumentIdRouteImport
+      parentRoute: typeof AdminAdminDocumentsRoute
+    }
   }
 }
 
+interface AdminAdminDocumentsRouteChildren {
+  AdminAdminDocumentsDocumentIdRoute: typeof AdminAdminDocumentsDocumentIdRoute
+}
+
+const AdminAdminDocumentsRouteChildren: AdminAdminDocumentsRouteChildren = {
+  AdminAdminDocumentsDocumentIdRoute: AdminAdminDocumentsDocumentIdRoute,
+}
+
+const AdminAdminDocumentsRouteWithChildren =
+  AdminAdminDocumentsRoute._addFileChildren(AdminAdminDocumentsRouteChildren)
+
 interface AdminRouteChildren {
   AdminAdminDashboardRoute: typeof AdminAdminDashboardRoute
-  AdminAdminDocumentsRoute: typeof AdminAdminDocumentsRoute
+  AdminAdminDocumentsRoute: typeof AdminAdminDocumentsRouteWithChildren
   AdminAdminPaymentsRoute: typeof AdminAdminPaymentsRoute
   AdminAdminUsersRoute: typeof AdminAdminUsersRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAdminDashboardRoute: AdminAdminDashboardRoute,
-  AdminAdminDocumentsRoute: AdminAdminDocumentsRoute,
+  AdminAdminDocumentsRoute: AdminAdminDocumentsRouteWithChildren,
   AdminAdminPaymentsRoute: AdminAdminPaymentsRoute,
   AdminAdminUsersRoute: AdminAdminUsersRoute,
 }
@@ -357,6 +407,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDocumentsRoute: typeof AuthenticatedDocumentsRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedUploadRoute: typeof AuthenticatedUploadRoute
   AuthenticatedReportDocumentIdRoute: typeof AuthenticatedReportDocumentIdRoute
 }
@@ -365,6 +416,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDocumentsRoute: AuthenticatedDocumentsRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedUploadRoute: AuthenticatedUploadRoute,
   AuthenticatedReportDocumentIdRoute: AuthenticatedReportDocumentIdRoute,
 }

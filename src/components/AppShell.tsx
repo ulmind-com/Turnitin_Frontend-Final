@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Upload, FileText, CreditCard, LogOut, ShieldCheck, Menu } from "lucide-react";
+import { LayoutDashboard, Upload, FileText, CreditCard, LogOut, ShieldCheck, Menu, Settings } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useAuthStore } from "@/lib/auth-store";
 import { useCurrentUser } from "@/hooks/use-current-user";
@@ -12,6 +12,7 @@ const nav = [
   { to: "/upload", label: "Upload", icon: Upload },
   { to: "/documents", label: "Documents", icon: FileText },
   { to: "/billing", label: "Billing", icon: CreditCard },
+  { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
