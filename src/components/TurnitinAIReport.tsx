@@ -183,7 +183,36 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
           margin: 0,
           filename: `${displayName}-ai-report.pdf`,
           image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: "#ffffff",
+            onclone: (clonedDoc: Document) => {
+              // Tailwind v4 uses oklch(...) which html2canvas can't parse.
+              // Resolve every element's computed color props to rgb() inline.
+              const props = [
+                "color",
+                "backgroundColor",
+                "borderTopColor",
+                "borderRightColor",
+                "borderBottomColor",
+                "borderLeftColor",
+                "outlineColor",
+                "fill",
+                "stroke",
+              ] as const;
+              clonedDoc.querySelectorAll<HTMLElement>("*").forEach((el) => {
+                const cs = clonedDoc.defaultView?.getComputedStyle(el);
+                if (!cs) return;
+                props.forEach((p) => {
+                  const v = cs[p as unknown as number];
+                  if (v && !v.includes("oklch")) {
+                    (el.style as unknown as Record<string, string>)[p] = v;
+                  }
+                });
+              });
+            },
+          },
           jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
           pagebreak: { mode: ["css", "legacy"] },
         })
