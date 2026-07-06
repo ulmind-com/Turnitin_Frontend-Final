@@ -29,6 +29,28 @@ export interface TurnitinAIReportProps {
 }
 
 const BRAND = "#0d5c8f";
+const TURNITIN_LOGO_URL =
+  "https://res.cloudinary.com/fawc0r5v/image/upload/v1783345470/image_yov91t.png";
+
+let cachedLogoDataUrl: string | null = null;
+async function loadTurnitinLogoDataUrl(): Promise<string | null> {
+  if (cachedLogoDataUrl) return cachedLogoDataUrl;
+  try {
+    const res = await fetch(TURNITIN_LOGO_URL, { mode: "cors" });
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+    cachedLogoDataUrl = dataUrl;
+    return dataUrl;
+  } catch {
+    return null;
+  }
+}
 
 type SummaryPdfData = {
   filename: string;
