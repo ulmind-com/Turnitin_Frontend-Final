@@ -213,7 +213,14 @@ function ReportView({
             <StatusBadge status={doc.ai_scan_status} />
           </div>
         </div>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowTurnitin(true)}
+            disabled={scanFailed}
+          >
+            <ScanEye className="h-4 w-4 mr-2" /> AI Detection Report
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
