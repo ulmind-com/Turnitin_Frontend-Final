@@ -189,7 +189,7 @@ function getOriginalPageIndices(originalDoc: PDFDocument, expectedPageCount: num
   return indices;
 }
 
-function TurnitinLogo({ opacity = 1, size = 18 }: { opacity?: number; size?: number }) {
+function TurnitinLogo({ opacity = 1, size = 28 }: { opacity?: number; size?: number }) {
   return (
     <img
       src={TURNITIN_LOGO_URL}
@@ -197,7 +197,7 @@ function TurnitinLogo({ opacity = 1, size = 18 }: { opacity?: number; size?: num
       crossOrigin="anonymous"
       style={{
         opacity,
-        height: size + 4,
+        height: size,
         width: "auto",
         display: "block",
       }}
@@ -211,12 +211,12 @@ function PageHeader({ pageLabel, submissionId }: { pageLabel: string; submission
       className="flex items-center justify-between px-12 py-5 border-b"
       style={{ borderColor: "#e5e7eb" }}
     >
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-8">
         <TurnitinLogo />
-        <span className="text-[13px] text-gray-600">{pageLabel}</span>
+        <span style={{ fontSize: "14px", color: "#1f2937", fontWeight: 400 }}>{pageLabel}</span>
       </div>
-      <div className="text-[13px] text-gray-600">
-        Submission ID <span className="ml-2">trn:oid:::{submissionId}</span>
+      <div style={{ fontSize: "14px", color: "#1f2937", fontWeight: 400 }}>
+        Submission ID <span className="ml-3">trn:oid:::{submissionId}</span>
       </div>
     </div>
   );
@@ -228,12 +228,12 @@ function PageFooter({ pageLabel, submissionId }: { pageLabel: string; submission
       className="flex items-center justify-between px-12 py-5 border-t"
       style={{ borderColor: "#e5e7eb" }}
     >
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-8">
         <TurnitinLogo />
-        <span className="text-[13px] text-gray-600">{pageLabel}</span>
+        <span style={{ fontSize: "14px", color: "#1f2937", fontWeight: 400 }}>{pageLabel}</span>
       </div>
-      <div className="text-[13px] text-gray-600">
-        Submission ID <span className="ml-2">trn:oid:::{submissionId}</span>
+      <div style={{ fontSize: "14px", color: "#1f2937", fontWeight: 400 }}>
+        Submission ID <span className="ml-3">trn:oid:::{submissionId}</span>
       </div>
     </div>
   );
