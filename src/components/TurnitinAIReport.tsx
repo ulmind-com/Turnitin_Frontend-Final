@@ -213,9 +213,9 @@ function PageHeader({ pageLabel, submissionId }: { pageLabel: string; submission
     >
       <div className="flex items-center gap-8">
         <TurnitinLogo />
-        <span style={{ fontSize: "14px", color: "#1f2937", fontWeight: 400 }}>{pageLabel}</span>
+        <span style={{ fontSize: "12px", color: "#1f2937", fontWeight: 400 }}>{pageLabel}</span>
       </div>
-      <div style={{ fontSize: "14px", color: "#1f2937", fontWeight: 400 }}>
+      <div style={{ fontSize: "12px", color: "#1f2937", fontWeight: 400 }}>
         Submission ID <span className="ml-3">trn:oid:::{submissionId}</span>
       </div>
     </div>
@@ -230,9 +230,9 @@ function PageFooter({ pageLabel, submissionId }: { pageLabel: string; submission
     >
       <div className="flex items-center gap-8">
         <TurnitinLogo />
-        <span style={{ fontSize: "14px", color: "#1f2937", fontWeight: 400 }}>{pageLabel}</span>
+        <span style={{ fontSize: "12px", color: "#1f2937", fontWeight: 400 }}>{pageLabel}</span>
       </div>
-      <div style={{ fontSize: "14px", color: "#1f2937", fontWeight: 400 }}>
+      <div style={{ fontSize: "12px", color: "#1f2937", fontWeight: 400 }}>
         Submission ID <span className="ml-3">trn:oid:::{submissionId}</span>
       </div>
     </div>
@@ -482,7 +482,7 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
                 </div>
 
                 <div
-                  className="rounded-md px-6 py-4 min-w-[200px] space-y-2"
+                  className="rounded-md px-6 py-4 min-w-[200px] space-y-2 ml-10"
                   style={{ backgroundColor: "#f5f5f5" }}
                 >
                   <div className="text-[13px] font-bold" style={{ color: "#0b1220" }}>
