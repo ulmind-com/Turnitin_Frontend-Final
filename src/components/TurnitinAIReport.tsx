@@ -523,25 +523,25 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
               <div className="grid grid-cols-[1.35fr_1fr] gap-8 items-stretch">
                 <div className="flex flex-col justify-center">
                   <h1
-                    className="text-[38px] leading-[1.1] font-bold mb-3 whitespace-nowrap"
+                    className="text-[30px] leading-[1.1] font-bold mb-3 whitespace-nowrap"
                     style={{ color: "#0b1220" }}
                   >
                     {overallAiScore}% detected as AI
                   </h1>
-                  <p className="text-[14px] text-gray-600 leading-relaxed max-w-md">
+                  <p className="text-[12px] text-gray-600 leading-relaxed max-w-md">
                     The percentage indicates the combined amount of likely AI-generated text as
                     well as likely AI-generated text that was also likely AI-paraphrased.
                   </p>
                 </div>
 
                 <div
-                  className="rounded-lg p-6 border flex flex-col justify-center"
+                  className="rounded-lg p-5 border flex flex-col justify-center"
                   style={{ backgroundColor: "#e8f4fd", borderColor: "#d0e4f0" }}
                 >
-                  <div className="text-[14px] font-bold mb-3" style={{ color: "#0b1220" }}>
+                  <div className="text-[12px] font-bold mb-2" style={{ color: "#0b1220" }}>
                     {caution.title}
                   </div>
-                  <p className="text-[13px] leading-relaxed" style={{ color: "#0b1220" }}>
+                  <p className="text-[11.5px] leading-relaxed" style={{ color: "#0b1220" }}>
                     {caution.body}
                   </p>
                 </div>
