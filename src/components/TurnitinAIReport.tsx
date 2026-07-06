@@ -51,6 +51,72 @@ const PDF_STYLE_PROPS = [
   ["stroke", "currentColor"],
 ] as const;
 
+const PDF_INLINE_STYLE_PROPS = [
+  "align-items",
+  "background-color",
+  "border-bottom-color",
+  "border-bottom-left-radius",
+  "border-bottom-right-radius",
+  "border-bottom-style",
+  "border-bottom-width",
+  "border-left-color",
+  "border-left-style",
+  "border-left-width",
+  "border-right-color",
+  "border-right-style",
+  "border-right-width",
+  "border-top-color",
+  "border-top-left-radius",
+  "border-top-right-radius",
+  "border-top-style",
+  "border-top-width",
+  "box-sizing",
+  "color",
+  "display",
+  "fill",
+  "flex",
+  "flex-basis",
+  "flex-direction",
+  "flex-grow",
+  "flex-shrink",
+  "flex-wrap",
+  "font-family",
+  "font-size",
+  "font-style",
+  "font-weight",
+  "gap",
+  "grid-template-columns",
+  "height",
+  "justify-content",
+  "letter-spacing",
+  "line-height",
+  "margin-bottom",
+  "margin-left",
+  "margin-right",
+  "margin-top",
+  "max-width",
+  "min-height",
+  "min-width",
+  "opacity",
+  "overflow-wrap",
+  "padding-bottom",
+  "padding-left",
+  "padding-right",
+  "padding-top",
+  "page-break-after",
+  "page-break-before",
+  "page-break-inside",
+  "row-gap",
+  "stroke",
+  "text-align",
+  "text-decoration-color",
+  "text-transform",
+  "vertical-align",
+  "white-space",
+  "width",
+  "word-break",
+] as const;
+
 function clamp01(value: number) {
   return Math.min(1, Math.max(0, value));
 }
@@ -125,7 +191,30 @@ function normalizePdfColorValue(value: string, fallback: string) {
     return oklchToRgb(colorBody) ?? fallback;
   });
 
-  return normalized.includes("oklch(") ? fallback : normalized;
+  return /\b(oklch|oklab|lch|lab|color-mix)\(/i.test(normalized) ? fallback : normalized;
+}
+
+function normalizePdfStyleValue(property: string, value: string) {
+  if (!value) return value;
+  const colorFallback =
+    property.includes("background")
+      ? "transparent"
+      : property.includes("border")
+        ? "#e5e7eb"
+        : property === "fill" || property === "stroke"
+          ? "currentColor"
+          : "#111827";
+
+  if (
+    property.includes("color") ||
+    property.includes("shadow") ||
+    property === "fill" ||
+    property === "stroke"
+  ) {
+    return normalizePdfColorValue(value, colorFallback);
+  }
+
+  return /\b(oklch|oklab|lch|lab|color-mix)\(/i.test(value) ? colorFallback : value;
 }
 
 function makePdfCloneCanvasSafe(clonedDoc: Document) {
@@ -155,6 +244,73 @@ function makePdfCloneCanvasSafe(clonedDoc: Document) {
       if (stroke && stroke !== "currentColor") el.setAttribute("stroke", stroke);
     }
   });
+}
+
+function copyStylesToPdfClone(sourceRoot: HTMLElement, cloneRoot: HTMLElement) {
+  const sourceElements = [sourceRoot, ...Array.from(sourceRoot.querySelectorAll<HTMLElement | SVGElement>("*"))];
+  const cloneElements = [cloneRoot, ...Array.from(cloneRoot.querySelectorAll<HTMLElement | SVGElement>("*"))];
+
+  sourceElements.forEach((sourceEl, index) => {
+    const cloneEl = cloneElements[index];
+    const computedStyle = window.getComputedStyle(sourceEl);
+    if (!cloneEl || !computedStyle) return;
+
+    cloneEl.removeAttribute("class");
+    PDF_INLINE_STYLE_PROPS.forEach((property) => {
+      const value = computedStyle.getPropertyValue(property);
+      if (value) {
+        cloneEl.style.setProperty(property, normalizePdfStyleValue(property, value), "important");
+      }
+    });
+
+    const boxShadow = normalizePdfColorValue(computedStyle.getPropertyValue("box-shadow"), "none");
+    const textShadow = normalizePdfColorValue(computedStyle.getPropertyValue("text-shadow"), "none");
+    cloneEl.style.setProperty("box-shadow", boxShadow === "none" ? "none" : boxShadow, "important");
+    cloneEl.style.setProperty("text-shadow", textShadow === "none" ? "none" : textShadow, "important");
+
+    if (sourceEl instanceof SVGElement && cloneEl instanceof SVGElement) {
+      cloneEl.setAttribute("width", sourceEl.getAttribute("width") ?? `${sourceEl.clientWidth}`);
+      cloneEl.setAttribute("height", sourceEl.getAttribute("height") ?? `${sourceEl.clientHeight}`);
+      const fill = cloneEl.style.getPropertyValue("fill");
+      const stroke = cloneEl.style.getPropertyValue("stroke");
+      if (fill && fill !== "currentColor") cloneEl.setAttribute("fill", fill);
+      if (stroke && stroke !== "currentColor") cloneEl.setAttribute("stroke", stroke);
+    }
+  });
+
+  cloneRoot.style.setProperty("position", "fixed", "important");
+  cloneRoot.style.setProperty("left", "-10000px", "important");
+  cloneRoot.style.setProperty("top", "0", "important");
+  cloneRoot.style.setProperty("z-index", "-1", "important");
+  cloneRoot.style.setProperty("background", "#ffffff", "important");
+}
+
+async function renderSummaryPdf(element: HTMLElement, filename: string) {
+  const pdfElement = element.cloneNode(true) as HTMLElement;
+  copyStylesToPdfClone(element, pdfElement);
+  document.body.appendChild(pdfElement);
+
+  try {
+    return (await html2pdf()
+      .set({
+        margin: 0,
+        filename,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: "#ffffff",
+          removeContainer: true,
+          onclone: makePdfCloneCanvasSafe,
+        },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        pagebreak: { mode: ["css", "legacy"] },
+      })
+      .from(pdfElement)
+      .outputPdf("arraybuffer")) as ArrayBuffer;
+  } finally {
+    pdfElement.remove();
+  }
 }
 
 function TurnitinLogo({ opacity = 1, size = 18 }: { opacity?: number; size?: number }) {
@@ -299,23 +455,10 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
       // 1. Generate summary PDF bytes from DOM
       let summaryArrayBuffer: ArrayBuffer;
       try {
-        summaryArrayBuffer = (await html2pdf()
-          .set({
-            margin: 0,
-            filename: `${displayName}-ai-report.pdf`,
-            image: { type: "jpeg", quality: 0.98 },
-            html2canvas: {
-              scale: 2,
-              useCORS: true,
-              backgroundColor: "#ffffff",
-              removeContainer: true,
-              onclone: makePdfCloneCanvasSafe,
-            },
-            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-            pagebreak: { mode: ["css", "legacy"] },
-          })
-          .from(pagesRef.current)
-          .outputPdf("arraybuffer")) as ArrayBuffer;
+        summaryArrayBuffer = await renderSummaryPdf(
+          pagesRef.current,
+          `${displayName}-ai-report.pdf`,
+        );
       } catch (renderError) {
         console.error("Failed to render summary PDF", renderError);
         toast.error("Could not render the report PDF", {
