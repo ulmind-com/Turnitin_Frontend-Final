@@ -482,7 +482,7 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
                 </div>
 
                 <div
-                  className="rounded-md px-6 py-4 min-w-[200px] space-y-2"
+                  className="rounded-md px-6 py-4 min-w-[200px] space-y-2 ml-10"
                   style={{ backgroundColor: "#f5f5f5" }}
                 >
                   <div className="text-[13px] font-bold" style={{ color: "#0b1220" }}>
