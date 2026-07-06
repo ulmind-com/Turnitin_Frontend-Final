@@ -374,6 +374,19 @@ function ReportView({
           </Tabs>
         </div>
       </div>
+      {showTurnitin && (
+        <TurnitinAIReport
+          documentId={documentId}
+          fileName={report.file_name}
+          fileType={doc.file_type}
+          createdAt={doc.created_at}
+          overallAiScore={report.overall_ai_score}
+          heuristics={report.ai_heuristics}
+          metadata={doc.metadata}
+          extractedText={report.extracted_text}
+          onClose={() => setShowTurnitin(false)}
+        />
+      )}
     </div>
   );
 }
