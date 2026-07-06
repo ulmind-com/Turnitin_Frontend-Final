@@ -29,6 +29,28 @@ export interface TurnitinAIReportProps {
 }
 
 const BRAND = "#0d5c8f";
+const TURNITIN_LOGO_URL =
+  "https://res.cloudinary.com/fawc0r5v/image/upload/v1783345470/image_yov91t.png";
+
+let cachedLogoDataUrl: string | null = null;
+async function loadTurnitinLogoDataUrl(): Promise<string | null> {
+  if (cachedLogoDataUrl) return cachedLogoDataUrl;
+  try {
+    const res = await fetch(TURNITIN_LOGO_URL, { mode: "cors" });
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+    cachedLogoDataUrl = dataUrl;
+    return dataUrl;
+  } catch {
+    return null;
+  }
+}
 
 type SummaryPdfData = {
   filename: string;
@@ -51,7 +73,32 @@ function setText(pdf: jsPDF, size: number, color = "#0b1220", style: "normal" | 
   pdf.setTextColor(color);
 }
 
-function drawTurnitinLogo(pdf: jsPDF, x: number, y: number, opacity = 1) {
+function drawTurnitinLogo(
+  pdf: jsPDF,
+  x: number,
+  y: number,
+  opacity = 1,
+  logoDataUrl: string | null = null,
+) {
+  if (logoDataUrl) {
+    try {
+      const gState = (pdf as unknown as {
+        GState: new (opts: { opacity: number }) => unknown;
+        setGState: (gs: unknown) => void;
+      });
+      if (opacity < 1 && gState.GState && gState.setGState) {
+        gState.setGState(new gState.GState({ opacity }));
+      }
+      // Logo image is roughly 5:1 aspect ratio. Render ~28mm wide.
+      pdf.addImage(logoDataUrl, "PNG", x, y - 3.5, 28, 6, undefined, "FAST");
+      if (opacity < 1 && gState.GState && gState.setGState) {
+        gState.setGState(new gState.GState({ opacity: 1 }));
+      }
+      return;
+    } catch {
+      /* fall through to vector fallback */
+    }
+  }
   pdf.setDrawColor(BRAND);
   pdf.setLineWidth(0.8);
   pdf.line(x, y + 3.5, x + 5, y - 1.5);
@@ -61,21 +108,31 @@ function drawTurnitinLogo(pdf: jsPDF, x: number, y: number, opacity = 1) {
   pdf.text("turnitin®", x + 8, y + 3);
 }
 
-function drawPageHeader(pdf: jsPDF, pageLabel: string, submissionId: string) {
+function drawPageHeader(
+  pdf: jsPDF,
+  pageLabel: string,
+  submissionId: string,
+  logoDataUrl: string | null = null,
+) {
   pdf.setDrawColor("#e5e7eb");
   pdf.setLineWidth(0.2);
   pdf.line(0, 20, 210, 20);
-  drawTurnitinLogo(pdf, 16, 10);
+  drawTurnitinLogo(pdf, 16, 10, 1, logoDataUrl);
   setText(pdf, 7, "#6b7280");
   pdf.text(pageLabel, 52, 13);
   pdf.text(`Submission ID   trn:oid:::${submissionId}`, 120, 13);
 }
 
-function drawPageFooter(pdf: jsPDF, pageLabel: string, submissionId: string) {
+function drawPageFooter(
+  pdf: jsPDF,
+  pageLabel: string,
+  submissionId: string,
+  logoDataUrl: string | null = null,
+) {
   pdf.setDrawColor("#e5e7eb");
   pdf.setLineWidth(0.2);
   pdf.line(0, 277, 210, 277);
-  drawTurnitinLogo(pdf, 16, 284, 0.5);
+  drawTurnitinLogo(pdf, 16, 284, 0.5, logoDataUrl);
   setText(pdf, 7, "#6b7280");
   pdf.text(pageLabel, 52, 287);
   pdf.text(`Submission ID   trn:oid:::${submissionId}`, 120, 287);
@@ -94,19 +151,15 @@ function drawWrappedText(
   return y + lines.length * lineHeight;
 }
 
-function renderSummaryPdf(data: SummaryPdfData) {
+function renderSummaryPdf(data: SummaryPdfData, logoDataUrl: string | null = null) {
   const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait", compress: true });
 
-  drawPageHeader(pdf, "Page 1 of 2 - Cover Page", data.submissionId);
+  drawPageHeader(pdf, "Page 1 of 2 - Cover Page", data.submissionId, logoDataUrl);
   setText(pdf, 22, "#cbd5e1");
   pdf.text("-     -", 102, 78, { align: "center" });
 
   setText(pdf, 24, "#0b1220", "bold");
   drawWrappedText(pdf, data.filename.replace(/\.[^.]+$/, ""), 16, 118, 178, 11);
-  setText(pdf, 11, "#6b7280");
-  pdf.text("AI Writing Detection Report", 16, 130);
-  setText(pdf, 8, "#4b5563");
-  pdf.text("▯  Assignment", 16, 140);
   pdf.setDrawColor("#e5e7eb");
   pdf.line(16, 155, 194, 155);
 
@@ -135,10 +188,10 @@ function renderSummaryPdf(data: SummaryPdfData) {
   pdf.text(`${data.pageCount.toLocaleString()} Pages`, 178, 186, { align: "right" });
   pdf.text(`${data.wordCount.toLocaleString()} Words`, 178, 198, { align: "right" });
   pdf.text(`${data.characterCount.toLocaleString()} Characters`, 178, 210, { align: "right" });
-  drawPageFooter(pdf, "Page 1 of 2 - Cover Page", data.submissionId);
+  drawPageFooter(pdf, "Page 1 of 2 - Cover Page", data.submissionId, logoDataUrl);
 
   pdf.addPage("a4", "portrait");
-  drawPageHeader(pdf, "Page 2 of 2 - AI Writing Overview", data.submissionId);
+  drawPageHeader(pdf, "Page 2 of 2 - AI Writing Overview", data.submissionId, logoDataUrl);
   setText(pdf, 24, "#0b1220", "bold");
   pdf.text(`${data.overallAiScore}% detected as AI`, 16, 55);
   setText(pdf, 8, "#4b5563");
@@ -200,7 +253,7 @@ function renderSummaryPdf(data: SummaryPdfData) {
     178,
     4.5,
   );
-  drawPageFooter(pdf, "Page 2 of 2 - AI Writing Overview", data.submissionId);
+  drawPageFooter(pdf, "Page 2 of 2 - AI Writing Overview", data.submissionId, logoDataUrl);
 
   const pdfOutput = pdf as unknown as { output: (type: "arraybuffer") => ArrayBuffer };
   return pdfOutput.output("arraybuffer");
@@ -221,28 +274,17 @@ function getOriginalPageIndices(originalDoc: PDFDocument, expectedPageCount: num
 
 function TurnitinLogo({ opacity = 1, size = 18 }: { opacity?: number; size?: number }) {
   return (
-    <div className="flex items-center gap-1.5" style={{ opacity }}>
-      <svg width={size + 4} height={size + 4} viewBox="0 0 32 32" fill="none">
-        <path
-          d="M8 22 L20 10 M20 10 L14 10 M20 10 L20 16"
-          stroke={BRAND}
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <span
-        style={{
-          color: BRAND,
-          fontWeight: 700,
-          fontSize: size,
-          letterSpacing: "-0.01em",
-        }}
-      >
-        turnitin
-        <span style={{ fontSize: size * 0.5, verticalAlign: "super" }}>®</span>
-      </span>
-    </div>
+    <img
+      src={TURNITIN_LOGO_URL}
+      alt="turnitin"
+      crossOrigin="anonymous"
+      style={{
+        opacity,
+        height: size + 4,
+        width: "auto",
+        display: "block",
+      }}
+    />
   );
 }
 
@@ -360,6 +402,7 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
     try {
       // 1. Generate summary PDF bytes directly with jsPDF. Do not use
       // html2canvas here: it fails on Tailwind v4 oklch()/oklab() colors.
+      const logoDataUrl = await loadTurnitinLogoDataUrl();
       let summaryArrayBuffer: ArrayBuffer;
       try {
         summaryArrayBuffer = renderSummaryPdf({
@@ -375,7 +418,7 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
           aiOnly,
           paraphrased,
           caution,
-        });
+        }, logoDataUrl);
       } catch (renderError) {
         console.error("Failed to render summary PDF", renderError);
         toast.error("Could not render the report PDF", {
@@ -492,26 +535,7 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
               >
                 {displayName}
               </h1>
-              <p className="text-[22px] text-gray-500 font-normal mb-2">
-                AI Writing Detection Report
-              </p>
-              <div className="flex items-center gap-2 text-gray-600 text-[15px] mb-10 mt-3">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <rect
-                    x="5"
-                    y="3"
-                    width="14"
-                    height="18"
-                    rx="2"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  />
-                  <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.5" />
-                </svg>
-                <span>Assignment</span>
-              </div>
-
-              <hr className="border-gray-200 mb-8" />
+              <hr className="border-gray-200 mb-8 mt-6" />
 
               <h2 className="text-[20px] font-bold mb-6" style={{ color: "#0b1220" }}>
                 Document Details
