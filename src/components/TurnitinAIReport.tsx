@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { Download, X, FileText } from "lucide-react";
 import { toPng } from "html-to-image";
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/lib/config";
 import { useAuthStore } from "@/lib/auth-store";
@@ -187,6 +187,108 @@ function getOriginalPageIndices(originalDoc: PDFDocument, expectedPageCount: num
   }
 
   return indices;
+}
+
+/**
+ * Stamp a Turnitin-style header + footer band on the given pages of a PDFDocument.
+ * Draws a white band with the turnitin logo, "Page X of N - Integrity Submission"
+ * label, and Submission ID on the right — matching the on-screen report chrome.
+ */
+async function stampHeaderFooter(
+  pdf: PDFDocument,
+  pageIndices: number[],
+  startPageNumber: number,
+  totalPages: number,
+  submissionId: string,
+) {
+  const logoBytes = await fetch(TURNITIN_LOGO_URL).then((r) => r.arrayBuffer());
+  const logo = await pdf.embedPng(logoBytes);
+  const font = await pdf.embedFont(StandardFonts.Helvetica);
+
+  const BAND_H = 32; // pt
+  const LOGO_H = 14;
+  const FONT_SIZE = 7.5;
+  const MARGIN_X = 34;
+  const TEXT_COLOR = rgb(0.12, 0.16, 0.22);
+  const BORDER_COLOR = rgb(0.9, 0.91, 0.92);
+  const WHITE = rgb(1, 1, 1);
+
+  const logoW = logo.width * (LOGO_H / logo.height);
+  const pages = pdf.getPages();
+
+  pageIndices.forEach((idx, i) => {
+    const page = pages[idx];
+    const { width, height } = page.getSize();
+    const pageNum = startPageNumber + i;
+    const label = `Page ${pageNum} of ${totalPages} - Integrity Submission`;
+    const subText = `Submission ID  trn:oid:::${submissionId}`;
+    const subW = font.widthOfTextAtSize(subText, FONT_SIZE);
+    const textY = (y: number) => y - FONT_SIZE / 2 + 1;
+
+    // ---- Header ----
+    page.drawRectangle({
+      x: 0,
+      y: height - BAND_H,
+      width,
+      height: BAND_H,
+      color: WHITE,
+    });
+    page.drawLine({
+      start: { x: 0, y: height - BAND_H },
+      end: { x: width, y: height - BAND_H },
+      thickness: 0.5,
+      color: BORDER_COLOR,
+    });
+    page.drawImage(logo, {
+      x: MARGIN_X,
+      y: height - BAND_H / 2 - LOGO_H / 2,
+      width: logoW,
+      height: LOGO_H,
+    });
+    page.drawText(label, {
+      x: MARGIN_X + logoW + 18,
+      y: textY(height - BAND_H / 2),
+      size: FONT_SIZE,
+      font,
+      color: TEXT_COLOR,
+    });
+    page.drawText(subText, {
+      x: width - MARGIN_X - subW,
+      y: textY(height - BAND_H / 2),
+      size: FONT_SIZE,
+      font,
+      color: TEXT_COLOR,
+    });
+
+    // ---- Footer ----
+    page.drawRectangle({ x: 0, y: 0, width, height: BAND_H, color: WHITE });
+    page.drawLine({
+      start: { x: 0, y: BAND_H },
+      end: { x: width, y: BAND_H },
+      thickness: 0.5,
+      color: BORDER_COLOR,
+    });
+    page.drawImage(logo, {
+      x: MARGIN_X,
+      y: BAND_H / 2 - LOGO_H / 2,
+      width: logoW,
+      height: LOGO_H,
+    });
+    page.drawText(label, {
+      x: MARGIN_X + logoW + 18,
+      y: textY(BAND_H / 2),
+      size: FONT_SIZE,
+      font,
+      color: TEXT_COLOR,
+    });
+    page.drawText(subText, {
+      x: width - MARGIN_X - subW,
+      y: textY(BAND_H / 2),
+      size: FONT_SIZE,
+      font,
+      color: TEXT_COLOR,
+    });
+  });
 }
 
 function TurnitinLogo({ opacity = 1, size = 28 }: { opacity?: number; size?: number }) {
