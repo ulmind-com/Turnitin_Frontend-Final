@@ -131,18 +131,8 @@ function drawPageFooter(
 ) {
   pdf.setDrawColor("#e5e7eb");
   pdf.setLineWidth(0.2);
-  pdf.line(0, 20, 210, 20);
-  drawTurnitinLogo(pdf, 16, 10);
-  setText(pdf, 7, "#6b7280");
-  pdf.text(pageLabel, 52, 13);
-  pdf.text(`Submission ID   trn:oid:::${submissionId}`, 120, 13);
-}
-
-function drawPageFooter(pdf: jsPDF, pageLabel: string, submissionId: string) {
-  pdf.setDrawColor("#e5e7eb");
-  pdf.setLineWidth(0.2);
   pdf.line(0, 277, 210, 277);
-  drawTurnitinLogo(pdf, 16, 284, 0.5);
+  drawTurnitinLogo(pdf, 16, 284, 0.5, logoDataUrl);
   setText(pdf, 7, "#6b7280");
   pdf.text(pageLabel, 52, 287);
   pdf.text(`Submission ID   trn:oid:::${submissionId}`, 120, 287);
