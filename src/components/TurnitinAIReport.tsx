@@ -227,10 +227,10 @@ function PageFooter({ pageLabel, submissionId }: { pageLabel: string; submission
       style={{ borderColor: "#e5e7eb" }}
     >
       <div className="flex items-center gap-6">
-        <TurnitinLogo opacity={0.5} />
-        <span className="text-[13px] text-gray-500">{pageLabel}</span>
+        <TurnitinLogo />
+        <span className="text-[13px] text-gray-600">{pageLabel}</span>
       </div>
-      <div className="text-[13px] text-gray-500">
+      <div className="text-[13px] text-gray-600">
         Submission ID <span className="ml-2">trn:oid:::{submissionId}</span>
       </div>
     </div>
