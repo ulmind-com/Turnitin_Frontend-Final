@@ -413,7 +413,7 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
               minHeight: "297mm",
               pageBreakAfter: "always",
               fontFamily:
-                "-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif",
+                "'Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif",
               color: "#111827",
             }}
           >
@@ -510,7 +510,7 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
               width: "210mm",
               minHeight: "297mm",
               fontFamily:
-                "-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif",
+                "'Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif",
               color: "#111827",
             }}
           >
