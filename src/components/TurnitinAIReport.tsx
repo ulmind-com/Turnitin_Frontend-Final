@@ -330,11 +330,10 @@ function getOriginalPageIndices(originalDoc: PDFDocument, expectedPageCount: num
   const indices = originalDoc.getPageIndices();
   const expected = Math.max(1, Math.round(expectedPageCount));
 
-  // Some highlighted PDFs arrive with a generated blank leading page. If the
-  // backend returns exactly one page more than the source metadata, drop it so
-  // the merged report starts with our two summary pages, then the real paper.
-  if (indices.length === expected + 1) {
-    return indices.slice(1);
+  // Some highlighted PDFs arrive with one generated blank page before the real
+  // source document. Keep the trailing pages that match the source page count.
+  if (Number.isFinite(expected) && expected > 0 && indices.length > expected) {
+    return indices.slice(indices.length - expected);
   }
 
   return indices;
