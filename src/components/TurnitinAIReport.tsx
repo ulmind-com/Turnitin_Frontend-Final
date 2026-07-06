@@ -151,19 +151,15 @@ function drawWrappedText(
   return y + lines.length * lineHeight;
 }
 
-function renderSummaryPdf(data: SummaryPdfData) {
+function renderSummaryPdf(data: SummaryPdfData, logoDataUrl: string | null = null) {
   const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait", compress: true });
 
-  drawPageHeader(pdf, "Page 1 of 2 - Cover Page", data.submissionId);
+  drawPageHeader(pdf, "Page 1 of 2 - Cover Page", data.submissionId, logoDataUrl);
   setText(pdf, 22, "#cbd5e1");
   pdf.text("-     -", 102, 78, { align: "center" });
 
   setText(pdf, 24, "#0b1220", "bold");
   drawWrappedText(pdf, data.filename.replace(/\.[^.]+$/, ""), 16, 118, 178, 11);
-  setText(pdf, 11, "#6b7280");
-  pdf.text("AI Writing Detection Report", 16, 130);
-  setText(pdf, 8, "#4b5563");
-  pdf.text("▯  Assignment", 16, 140);
   pdf.setDrawColor("#e5e7eb");
   pdf.line(16, 155, 194, 155);
 
