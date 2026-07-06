@@ -150,24 +150,17 @@ async function addVisibleReportPages(mergedPdf: PDFDocument, root: HTMLElement) 
   if (!pages.length) throw new Error("No report pages found for export");
 
   for (const page of pages) {
-    const pageId = page.dataset.reportPage;
     const rect = page.getBoundingClientRect();
-    const canvas = await html2canvas(page, {
-      scale: REPORT_CAPTURE_SCALE,
-      useCORS: true,
-      allowTaint: false,
-      logging: false,
+    const dataUrl = await toPng(page, {
+      pixelRatio: REPORT_CAPTURE_SCALE,
+      cacheBust: true,
       backgroundColor: "#ffffff",
-      onclone: (clonedDocument) => {
-        const selector = pageId ? `[data-report-page="${pageId}"]` : "[data-report-page]";
-        const clonedPage = clonedDocument.querySelector<HTMLElement>(selector);
-        if (!clonedPage) return;
-        clonedPage.style.boxShadow = "none";
-        makeCloneCanvasSafe(clonedPage);
-      },
+      width: rect.width,
+      height: rect.height,
+      style: { boxShadow: "none" },
     });
 
-    const pngBytes = await fetch(canvas.toDataURL("image/png")).then((res) => res.arrayBuffer());
+    const pngBytes = await fetch(dataUrl).then((res) => res.arrayBuffer());
     const embeddedPng = await mergedPdf.embedPng(pngBytes);
     const pdfWidth = rect.width * CSS_PX_TO_PDF_PT;
     const pdfHeight = rect.height * CSS_PX_TO_PDF_PT;
