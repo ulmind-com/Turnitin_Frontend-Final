@@ -421,78 +421,77 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
           >
             <PageHeader pageLabel="Page 1 of 2 - Cover Page" submissionId={submissionId} />
 
-            <div className="flex-1 flex flex-col px-12 py-10">
-              <div className="text-center text-4xl tracking-[0.5em] text-gray-300 font-light select-none mt-8 mb-24">
-                - -
-              </div>
+            <div className="flex-1 flex flex-col px-14 pt-10 pb-10">
+              <div style={{ height: "230px" }} />
 
               <h1
-                className="text-[46px] leading-[1.1] font-bold mb-4 break-words"
+                className="text-[34px] leading-[1.2] font-bold mb-2 break-words"
                 style={{ color: "#0b1220" }}
               >
                 {displayName}
               </h1>
-              <hr className="border-gray-200 mb-8 mt-6" />
 
-              <h2 className="text-[20px] font-bold mb-6" style={{ color: "#0b1220" }}>
+              <hr className="border-gray-200 mt-6 mb-8" />
+
+              <h2 className="text-[17px] font-bold mb-6" style={{ color: "#0b1220" }}>
                 Document Details
               </h2>
 
-              <div className="grid grid-cols-[1fr_auto] gap-16">
-                <div className="space-y-6">
+              <div className="grid grid-cols-[1fr_auto] gap-10 items-start">
+                <div className="space-y-5">
                   <div>
-                    <div className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold mb-1">
+                    <div className="text-[11px] text-gray-500 font-semibold mb-1">
                       Submission ID
                     </div>
-                    <div className="text-[15px] font-semibold" style={{ color: "#0b1220" }}>
+                    <div className="text-[13px] font-bold" style={{ color: "#0b1220" }}>
                       trn:oid:::{submissionId}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold mb-1">
+                    <div className="text-[11px] text-gray-500 font-semibold mb-1">
                       Submission Date
                     </div>
-                    <div className="text-[15px] font-semibold" style={{ color: "#0b1220" }}>
+                    <div className="text-[13px] font-bold" style={{ color: "#0b1220" }}>
                       {formatDate(createdAt)}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold mb-1">
+                    <div className="text-[11px] text-gray-500 font-semibold mb-1">
                       File Name
                     </div>
-                    <div className="text-[15px] font-semibold break-all" style={{ color: "#0b1220" }}>
+                    <div className="text-[13px] font-bold break-all" style={{ color: "#0b1220" }}>
                       {fileName}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold mb-1">
+                    <div className="text-[11px] text-gray-500 font-semibold mb-1">
                       File Type
                     </div>
-                    <div className="text-[15px] font-semibold uppercase" style={{ color: "#0b1220" }}>
+                    <div className="text-[13px] font-bold uppercase" style={{ color: "#0b1220" }}>
                       {fileType}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold mb-1">
+                    <div className="text-[11px] text-gray-500 font-semibold mb-1">
                       File Size
                     </div>
-                    <div className="text-[15px] font-semibold" style={{ color: "#0b1220" }}>
+                    <div className="text-[13px] font-bold" style={{ color: "#0b1220" }}>
                       {formatBytes(metadata.file_size)}
                     </div>
                   </div>
                 </div>
 
                 <div
-                  className="rounded-md border px-8 py-6 min-w-[240px] space-y-4 text-right self-start"
-                  style={{ borderColor: "#e5e7eb", backgroundColor: "#fafafa" }}
+                  className="rounded-md px-6 py-4 min-w-[200px] space-y-2"
+                  style={{ backgroundColor: "#f5f5f5" }}
                 >
-                  <div className="text-[15px] font-bold" style={{ color: "#0b1220" }}>
+                  <div className="text-[13px] font-bold" style={{ color: "#0b1220" }}>
                     {pageCount.toLocaleString()} Pages
                   </div>
-                  <div className="text-[15px] font-bold" style={{ color: "#0b1220" }}>
+                  <div className="text-[13px] font-bold" style={{ color: "#0b1220" }}>
                     {wordCount.toLocaleString()} Words
                   </div>
-                  <div className="text-[15px] font-bold" style={{ color: "#0b1220" }}>
+                  <div className="text-[13px] font-bold" style={{ color: "#0b1220" }}>
                     {characterCount.toLocaleString()} Characters
                   </div>
                 </div>
