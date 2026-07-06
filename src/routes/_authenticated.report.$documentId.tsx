@@ -218,6 +218,13 @@ function ReportView({
         <div className="ml-auto flex items-center gap-2">
           <Button
             variant="outline"
+            onClick={() => setShowPlagiarism(true)}
+            disabled={scanFailed}
+          >
+            <ShieldCheck className="h-4 w-4 mr-2" /> Plagiarism Report
+          </Button>
+          <Button
+            variant="outline"
             onClick={() => setShowTurnitin(true)}
             disabled={scanFailed}
           >
