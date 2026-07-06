@@ -205,10 +205,11 @@ async function stampHeaderFooter(
   const logo = await pdf.embedPng(logoBytes);
   const font = await pdf.embedFont(StandardFonts.Helvetica);
 
-  const BAND_H = 32; // pt
-  const LOGO_H = 14;
-  const FONT_SIZE = 7.5;
-  const MARGIN_X = 34;
+  const BAND_H = 50; // pt — matches on-screen header (px-12 py-5 + 28px logo)
+  const LOGO_H = 21; // pt — 28px logo * (72/96)
+  const FONT_SIZE = 7.5; // pt — 10px text
+  const MARGIN_X = 36; // pt — 48px horizontal padding
+  const LOGO_TEXT_GAP = 24; // pt — gap-8 (32px)
   const TEXT_COLOR = rgb(0.12, 0.16, 0.22);
   const BORDER_COLOR = rgb(0.9, 0.91, 0.92);
   const WHITE = rgb(1, 1, 1);
