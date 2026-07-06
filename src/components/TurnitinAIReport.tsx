@@ -227,10 +227,10 @@ function PageFooter({ pageLabel, submissionId }: { pageLabel: string; submission
       style={{ borderColor: "#e5e7eb" }}
     >
       <div className="flex items-center gap-6">
-        <TurnitinLogo opacity={0.5} />
-        <span className="text-[13px] text-gray-500">{pageLabel}</span>
+        <TurnitinLogo />
+        <span className="text-[13px] text-gray-600">{pageLabel}</span>
       </div>
-      <div className="text-[13px] text-gray-500">
+      <div className="text-[13px] text-gray-600">
         Submission ID <span className="ml-2">trn:oid:::{submissionId}</span>
       </div>
     </div>
@@ -413,7 +413,7 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
               minHeight: "297mm",
               pageBreakAfter: "always",
               fontFamily:
-                "-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif",
+                "'Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif",
               color: "#111827",
             }}
           >
@@ -510,7 +510,7 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
               width: "210mm",
               minHeight: "297mm",
               fontFamily:
-                "-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif",
+                "'Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif",
               color: "#111827",
             }}
           >
