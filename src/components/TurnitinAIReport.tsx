@@ -215,7 +215,7 @@ function PageHeader({ pageLabel, submissionId }: { pageLabel: string; submission
         <TurnitinLogo />
         <span style={{ fontSize: "10px", color: "#1f2937", fontWeight: 400 }}>{pageLabel}</span>
       </div>
-      <div style={{ fontSize: "12px", color: "#1f2937", fontWeight: 400 }}>
+      <div style={{ fontSize: "10px", color: "#1f2937", fontWeight: 400 }}>
         Submission ID <span className="ml-3">trn:oid:::{submissionId}</span>
       </div>
     </div>
