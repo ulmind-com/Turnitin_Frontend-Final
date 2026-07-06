@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Download, Sparkles, RefreshCw, X, FileText } from "lucide-react";
-import html2canvas from "html2canvas";
+import { toPng } from "html-to-image";
 import { PDFDocument } from "pdf-lib";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/lib/config";
