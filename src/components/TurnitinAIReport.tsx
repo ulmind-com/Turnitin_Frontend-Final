@@ -73,7 +73,32 @@ function setText(pdf: jsPDF, size: number, color = "#0b1220", style: "normal" | 
   pdf.setTextColor(color);
 }
 
-function drawTurnitinLogo(pdf: jsPDF, x: number, y: number, opacity = 1) {
+function drawTurnitinLogo(
+  pdf: jsPDF,
+  x: number,
+  y: number,
+  opacity = 1,
+  logoDataUrl: string | null = null,
+) {
+  if (logoDataUrl) {
+    try {
+      const gState = (pdf as unknown as {
+        GState: new (opts: { opacity: number }) => unknown;
+        setGState: (gs: unknown) => void;
+      });
+      if (opacity < 1 && gState.GState && gState.setGState) {
+        gState.setGState(new gState.GState({ opacity }));
+      }
+      // Logo image is roughly 5:1 aspect ratio. Render ~28mm wide.
+      pdf.addImage(logoDataUrl, "PNG", x, y - 3.5, 28, 6, undefined, "FAST");
+      if (opacity < 1 && gState.GState && gState.setGState) {
+        gState.setGState(new gState.GState({ opacity: 1 }));
+      }
+      return;
+    } catch {
+      /* fall through to vector fallback */
+    }
+  }
   pdf.setDrawColor(BRAND);
   pdf.setLineWidth(0.8);
   pdf.line(x, y + 3.5, x + 5, y - 1.5);
@@ -83,7 +108,27 @@ function drawTurnitinLogo(pdf: jsPDF, x: number, y: number, opacity = 1) {
   pdf.text("turnitin®", x + 8, y + 3);
 }
 
-function drawPageHeader(pdf: jsPDF, pageLabel: string, submissionId: string) {
+function drawPageHeader(
+  pdf: jsPDF,
+  pageLabel: string,
+  submissionId: string,
+  logoDataUrl: string | null = null,
+) {
+  pdf.setDrawColor("#e5e7eb");
+  pdf.setLineWidth(0.2);
+  pdf.line(0, 20, 210, 20);
+  drawTurnitinLogo(pdf, 16, 10, 1, logoDataUrl);
+  setText(pdf, 7, "#6b7280");
+  pdf.text(pageLabel, 52, 13);
+  pdf.text(`Submission ID   trn:oid:::${submissionId}`, 120, 13);
+}
+
+function drawPageFooter(
+  pdf: jsPDF,
+  pageLabel: string,
+  submissionId: string,
+  logoDataUrl: string | null = null,
+) {
   pdf.setDrawColor("#e5e7eb");
   pdf.setLineWidth(0.2);
   pdf.line(0, 20, 210, 20);
