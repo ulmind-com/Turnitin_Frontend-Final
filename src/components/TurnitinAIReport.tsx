@@ -297,22 +297,32 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
     setDownloading(true);
     try {
       // 1. Generate summary PDF bytes from DOM
-      const summaryArrayBuffer = (await html2pdf()
-        .set({
-          margin: 0,
-          filename: `${displayName}-ai-report.pdf`,
-          image: { type: "jpeg", quality: 0.98 },
-          html2canvas: {
-            scale: 2,
-            useCORS: true,
-            backgroundColor: "#ffffff",
-            onclone: makePdfCloneCanvasSafe,
-          },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-          pagebreak: { mode: ["css", "legacy"] },
-        })
-        .from(pagesRef.current)
-        .output("arraybuffer")) as ArrayBuffer;
+      let summaryArrayBuffer: ArrayBuffer;
+      try {
+        summaryArrayBuffer = (await html2pdf()
+          .set({
+            margin: 0,
+            filename: `${displayName}-ai-report.pdf`,
+            image: { type: "jpeg", quality: 0.98 },
+            html2canvas: {
+              scale: 2,
+              useCORS: true,
+              backgroundColor: "#ffffff",
+              removeContainer: true,
+              onclone: makePdfCloneCanvasSafe,
+            },
+            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+            pagebreak: { mode: ["css", "legacy"] },
+          })
+          .from(pagesRef.current)
+          .outputPdf("arraybuffer")) as ArrayBuffer;
+      } catch (renderError) {
+        console.error("Failed to render summary PDF", renderError);
+        toast.error("Could not render the report PDF", {
+          description: "Please try again after the report finishes loading.",
+        });
+        return;
+      }
 
       const mergedPdf = await PDFDocument.create();
       const summaryDoc = await PDFDocument.load(summaryArrayBuffer);
@@ -364,7 +374,9 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (error) {
       console.error("Failed to generate PDF", error);
-      toast.error("Failed to generate PDF");
+      toast.error("Failed to generate PDF", {
+        description: "The report could not be prepared for download.",
+      });
     } finally {
       setDownloading(false);
     }
