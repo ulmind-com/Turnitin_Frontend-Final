@@ -2,8 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useState, useMemo, useRef, useEffect } from "react";
-import { ArrowLeft, Download, ExternalLink, AlertTriangle, ChevronDown, ChevronUp, FileText, Sparkles, FileDown, ScanEye } from "lucide-react";
+import { ArrowLeft, Download, ExternalLink, AlertTriangle, ChevronDown, ChevronUp, FileText, Sparkles, FileDown, ScanEye, ShieldCheck } from "lucide-react";
 import { TurnitinAIReport } from "@/components/TurnitinAIReport";
+import { TurnitinPlagiarismReport } from "@/components/TurnitinPlagiarismReport";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { useDocumentPolling } from "@/hooks/use-document-polling";
@@ -147,6 +148,7 @@ function ReportView({
   const [tab, setTab] = useState<"overview" | "plagiarism" | "ai" | "grade">("overview");
   const [downloading, setDownloading] = useState<null | "combined" | "plagiarism" | "ai">(null);
   const [showTurnitin, setShowTurnitin] = useState(false);
+  const [showPlagiarism, setShowPlagiarism] = useState(false);
 
   const downloadPdf = async (kind: "combined" | "plagiarism" | "ai") => {
     const path =
@@ -214,6 +216,13 @@ function ReportView({
           </div>
         </div>
         <div className="ml-auto flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowPlagiarism(true)}
+            disabled={scanFailed}
+          >
+            <ShieldCheck className="h-4 w-4 mr-2" /> Plagiarism Report
+          </Button>
           <Button
             variant="outline"
             onClick={() => setShowTurnitin(true)}
@@ -343,12 +352,12 @@ function ReportView({
             </TabsContent>
 
             <TabsContent value="plagiarism" className="flex-1 overflow-y-auto p-4 space-y-3 m-0">
-              {report.matched_sources.length === 0 ? (
+              {(report.matched_sources ?? []).length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">
                   No matching sources found.
                 </p>
               ) : (
-                report.matched_sources.map((s, i) => (
+                (report.matched_sources ?? []).map((s, i) => (
                   <SourceCard key={i} source={s} highlight={activeChunk === s.chunk_index} />
                 ))
               )}
@@ -385,6 +394,20 @@ function ReportView({
           metadata={doc.metadata}
           extractedText={report.extracted_text}
           onClose={() => setShowTurnitin(false)}
+        />
+      )}
+      {showPlagiarism && (
+        <TurnitinPlagiarismReport
+          documentId={documentId}
+          fileName={report.file_name}
+          fileType={doc.file_type}
+          createdAt={doc.created_at}
+          overallPlagiarismScore={report.overall_plagiarism_score}
+          matchedSources={report.matched_sources ?? []}
+          integrityFlags={doc.integrity_flags ?? []}
+          metadata={doc.metadata}
+          extractedText={report.extracted_text}
+          onClose={() => setShowPlagiarism(false)}
         />
       )}
     </div>
