@@ -279,9 +279,10 @@ function copyStylesToPdfClone(sourceRoot: HTMLElement, cloneRoot: HTMLElement) {
   });
 
   cloneRoot.style.setProperty("position", "fixed", "important");
-  cloneRoot.style.setProperty("left", "-10000px", "important");
+  cloneRoot.style.setProperty("left", "0", "important");
   cloneRoot.style.setProperty("top", "0", "important");
   cloneRoot.style.setProperty("z-index", "-1", "important");
+  cloneRoot.style.setProperty("pointer-events", "none", "important");
   cloneRoot.style.setProperty("background", "#ffffff", "important");
 }
 
