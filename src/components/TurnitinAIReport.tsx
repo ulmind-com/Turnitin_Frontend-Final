@@ -6,8 +6,8 @@ import { toast } from "sonner";
 import { API_BASE_URL } from "@/lib/config";
 import { useAuthStore } from "@/lib/auth-store";
 import { Button } from "@/components/ui/button";
-import aiIcon from "@/assets/icon-ai.png.asset.json";
-import paraIcon from "@/assets/icon-para.png.asset.json";
+import aiIcon from "@/assets/icon-ai.png";
+import paraIcon from "@/assets/icon-para.png";
 
 /**
  * Turnitin-style AI Writing Detection Report.
