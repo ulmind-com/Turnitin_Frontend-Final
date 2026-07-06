@@ -322,40 +322,19 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
     if (!pagesRef.current) return;
     setDownloading(true);
     try {
-      // 1. Generate summary PDF bytes directly with jsPDF. Do not use
-      // html2canvas here: it fails on Tailwind v4 oklch()/oklab() colors.
-      const logoDataUrl = await loadTurnitinLogoDataUrl();
-      let summaryArrayBuffer: ArrayBuffer;
+      const mergedPdf = await PDFDocument.create();
+
+      // 1. Capture the exact visible report pages the user is looking at.
+      // Each page keeps its own rendered size, then the original PDF is appended.
       try {
-        summaryArrayBuffer = renderSummaryPdf({
-          filename: fileName,
-          fileType,
-          createdAt,
-          submissionId,
-          overallAiScore,
-          pageCount,
-          wordCount,
-          characterCount,
-          fileSize: metadata.file_size,
-          aiOnly,
-          paraphrased,
-          caution,
-        }, logoDataUrl);
+        await addVisibleReportPages(mergedPdf, pagesRef.current);
       } catch (renderError) {
-        console.error("Failed to render summary PDF", renderError);
+        console.error("Failed to capture visible report PDF", renderError);
         toast.error("Could not render the report PDF", {
           description: "Please try again after the report finishes loading.",
         });
         return;
       }
-
-      const mergedPdf = await PDFDocument.create();
-      const summaryDoc = await PDFDocument.load(summaryArrayBuffer);
-      const summaryPages = await mergedPdf.copyPages(
-        summaryDoc,
-        summaryDoc.getPageIndices(),
-      );
-      summaryPages.forEach((p) => mergedPdf.addPage(p));
 
       // 2. Try to fetch highlighted original PDF from backend
       try {
