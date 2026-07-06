@@ -433,7 +433,10 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
         return;
       }
 
-      // 2. Try to fetch highlighted original PDF from backend
+      // 2. Try to fetch highlighted original PDF from backend and stamp
+      //    the same header/footer chrome on every page.
+      const reportPageCount = mergedPdf.getPageCount(); // cover + overview
+      let originalAppendedCount = 0;
       try {
         const token = useAuthStore.getState().accessToken;
         const res = await fetch(
@@ -445,11 +448,10 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
         if (res.ok) {
           const originalBytes = await res.arrayBuffer();
           const originalDoc = await PDFDocument.load(originalBytes);
-          const originalPages = await mergedPdf.copyPages(
-            originalDoc,
-            getOriginalPageIndices(originalDoc, pageCount),
-          );
+          const sourceIndices = getOriginalPageIndices(originalDoc, pageCount);
+          const originalPages = await mergedPdf.copyPages(originalDoc, sourceIndices);
           originalPages.forEach((p) => mergedPdf.addPage(p));
+          originalAppendedCount = originalPages.length;
         } else {
           toast.warning("Highlighted original unavailable", {
             description: "Downloading summary only.",
@@ -460,6 +462,26 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
         toast.warning("Highlighted original unavailable", {
           description: "Downloading summary only.",
         });
+      }
+
+      // Stamp header/footer on every appended original page so the whole
+      // downloaded PDF shares one consistent chrome.
+      if (originalAppendedCount > 0) {
+        const stampedIndices = Array.from(
+          { length: originalAppendedCount },
+          (_, i) => reportPageCount + i,
+        );
+        try {
+          await stampHeaderFooter(
+            mergedPdf,
+            stampedIndices,
+            reportPageCount + 1,
+            reportPageCount + originalAppendedCount,
+            submissionId,
+          );
+        } catch (stampErr) {
+          console.error("Failed to stamp header/footer on original pages", stampErr);
+        }
       }
 
       // 3. Save & trigger download
