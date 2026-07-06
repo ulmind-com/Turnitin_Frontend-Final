@@ -553,12 +553,13 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
 
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
-                  <div
-                    className="rounded-full w-9 h-9 flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: "#c4ebe8" }}
-                  >
-                    <Sparkles className="h-4 w-4" style={{ color: "#0b7a70" }} />
-                  </div>
+                  <img
+                    src={aiIcon.url}
+                    alt=""
+                    crossOrigin="anonymous"
+                    className="w-9 h-9 shrink-0"
+                    style={{ objectFit: "contain" }}
+                  />
                   <div>
                     <div className="text-[15px] mb-1" style={{ color: "#0b1220" }}>
                       <span className="font-bold">{Math.round(aiOnly * (wordCount / 100))}</span>
@@ -572,12 +573,13 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div
-                    className="rounded-full w-9 h-9 flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: "#e3d7f5" }}
-                  >
-                    <RefreshCw className="h-4 w-4" style={{ color: "#6b3fa0" }} />
-                  </div>
+                  <img
+                    src={paraIcon.url}
+                    alt=""
+                    crossOrigin="anonymous"
+                    className="w-9 h-9 shrink-0"
+                    style={{ objectFit: "contain" }}
+                  />
                   <div>
                     <div className="text-[15px] mb-1" style={{ color: "#0b1220" }}>
                       <span className="font-bold">
