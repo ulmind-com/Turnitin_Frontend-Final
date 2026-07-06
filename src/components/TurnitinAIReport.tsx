@@ -358,13 +358,24 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
     if (!pagesRef.current) return;
     setDownloading(true);
     try {
-      // 1. Generate summary PDF bytes from DOM
+      // 1. Generate summary PDF bytes directly with jsPDF. Do not use
+      // html2canvas here: it fails on Tailwind v4 oklch()/oklab() colors.
       let summaryArrayBuffer: ArrayBuffer;
       try {
-        summaryArrayBuffer = await renderSummaryPdf(
-          pagesRef.current,
-          `${displayName}-ai-report.pdf`,
-        );
+        summaryArrayBuffer = renderSummaryPdf({
+          filename: fileName,
+          fileType,
+          createdAt,
+          submissionId,
+          overallAiScore,
+          pageCount,
+          wordCount,
+          characterCount,
+          fileSize: metadata.file_size,
+          aiOnly,
+          paraphrased,
+          caution,
+        });
       } catch (renderError) {
         console.error("Failed to render summary PDF", renderError);
         toast.error("Could not render the report PDF", {
