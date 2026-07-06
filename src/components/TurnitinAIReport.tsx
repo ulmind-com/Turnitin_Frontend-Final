@@ -247,7 +247,7 @@ async function stampHeaderFooter(
       height: LOGO_H,
     });
     page.drawText(label, {
-      x: MARGIN_X + logoW + 18,
+      x: MARGIN_X + logoW + LOGO_TEXT_GAP,
       y: textY(height - BAND_H / 2),
       size: FONT_SIZE,
       font,
@@ -276,7 +276,7 @@ async function stampHeaderFooter(
       height: LOGO_H,
     });
     page.drawText(label, {
-      x: MARGIN_X + logoW + 18,
+      x: MARGIN_X + logoW + LOGO_TEXT_GAP,
       y: textY(BAND_H / 2),
       size: FONT_SIZE,
       font,
