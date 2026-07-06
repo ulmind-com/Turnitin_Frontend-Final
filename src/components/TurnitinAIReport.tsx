@@ -188,10 +188,10 @@ function renderSummaryPdf(data: SummaryPdfData, logoDataUrl: string | null = nul
   pdf.text(`${data.pageCount.toLocaleString()} Pages`, 178, 186, { align: "right" });
   pdf.text(`${data.wordCount.toLocaleString()} Words`, 178, 198, { align: "right" });
   pdf.text(`${data.characterCount.toLocaleString()} Characters`, 178, 210, { align: "right" });
-  drawPageFooter(pdf, "Page 1 of 2 - Cover Page", data.submissionId);
+  drawPageFooter(pdf, "Page 1 of 2 - Cover Page", data.submissionId, logoDataUrl);
 
   pdf.addPage("a4", "portrait");
-  drawPageHeader(pdf, "Page 2 of 2 - AI Writing Overview", data.submissionId);
+  drawPageHeader(pdf, "Page 2 of 2 - AI Writing Overview", data.submissionId, logoDataUrl);
   setText(pdf, 24, "#0b1220", "bold");
   pdf.text(`${data.overallAiScore}% detected as AI`, 16, 55);
   setText(pdf, 8, "#4b5563");
