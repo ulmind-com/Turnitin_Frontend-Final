@@ -38,6 +38,125 @@ export interface TurnitinAIReportProps {
 
 const BRAND = "#0d5c8f";
 
+const PDF_STYLE_PROPS = [
+  ["color", "#111827"],
+  ["background-color", "transparent"],
+  ["border-top-color", "#e5e7eb"],
+  ["border-right-color", "#e5e7eb"],
+  ["border-bottom-color", "#e5e7eb"],
+  ["border-left-color", "#e5e7eb"],
+  ["outline-color", "#111827"],
+  ["text-decoration-color", "#111827"],
+  ["fill", "currentColor"],
+  ["stroke", "currentColor"],
+] as const;
+
+function clamp01(value: number) {
+  return Math.min(1, Math.max(0, value));
+}
+
+function parseOklchChannel(value: string, isLightness = false) {
+  const trimmed = value.trim();
+  if (trimmed.endsWith("%")) {
+    const parsed = Number.parseFloat(trimmed);
+    return Number.isFinite(parsed) ? parsed / 100 : 0;
+  }
+
+  const parsed = Number.parseFloat(trimmed);
+  if (!Number.isFinite(parsed)) return 0;
+  return isLightness && parsed > 1 ? parsed / 100 : parsed;
+}
+
+function parseOklchAlpha(value?: string) {
+  if (!value) return 1;
+  const trimmed = value.trim();
+  if (trimmed.endsWith("%")) {
+    const parsed = Number.parseFloat(trimmed);
+    return Number.isFinite(parsed) ? clamp01(parsed / 100) : 1;
+  }
+
+  const parsed = Number.parseFloat(trimmed);
+  return Number.isFinite(parsed) ? clamp01(parsed) : 1;
+}
+
+function oklchToRgb(value: string) {
+  const alphaSplit = value.trim().split("/").map((part) => part.trim());
+  const channels = alphaSplit[0].split(/\s+/).filter(Boolean);
+  if (channels.length < 3) return null;
+
+  const l = parseOklchChannel(channels[0], true);
+  const c = parseOklchChannel(channels[1]);
+  const h = Number.parseFloat(channels[2]);
+  if (!Number.isFinite(h)) return null;
+
+  const alpha = parseOklchAlpha(alphaSplit[1]);
+  const hueRadians = (h * Math.PI) / 180;
+  const a = c * Math.cos(hueRadians);
+  const b = c * Math.sin(hueRadians);
+
+  const lPrime = l + 0.3963377774 * a + 0.2158037573 * b;
+  const mPrime = l - 0.1055613458 * a - 0.0638541728 * b;
+  const sPrime = l - 0.0894841775 * a - 1.291485548 * b;
+
+  const lCubed = lPrime ** 3;
+  const mCubed = mPrime ** 3;
+  const sCubed = sPrime ** 3;
+
+  const linearR = 4.0767416621 * lCubed - 3.3077115913 * mCubed + 0.2309699292 * sCubed;
+  const linearG = -1.2684380046 * lCubed + 2.6097574011 * mCubed - 0.3413193965 * sCubed;
+  const linearB = -0.0041960863 * lCubed - 0.7034186147 * mCubed + 1.707614701 * sCubed;
+
+  const toSrgb = (channel: number) => {
+    const converted =
+      channel <= 0.0031308 ? 12.92 * channel : 1.055 * channel ** (1 / 2.4) - 0.055;
+    return Math.round(clamp01(converted) * 255);
+  };
+
+  const red = toSrgb(linearR);
+  const green = toSrgb(linearG);
+  const blue = toSrgb(linearB);
+
+  return alpha < 1 ? `rgba(${red}, ${green}, ${blue}, ${alpha})` : `rgb(${red}, ${green}, ${blue})`;
+}
+
+function normalizePdfColorValue(value: string, fallback: string) {
+  if (!value || value === "none" || value === "currentColor") return value;
+  const normalized = value.replace(/oklch\(([^)]+)\)/gi, (_match, colorBody: string) => {
+    return oklchToRgb(colorBody) ?? fallback;
+  });
+
+  return normalized.includes("oklch(") ? fallback : normalized;
+}
+
+function makePdfCloneCanvasSafe(clonedDoc: Document) {
+  const elements = clonedDoc.querySelectorAll<HTMLElement | SVGElement>("*");
+
+  elements.forEach((el) => {
+    const computedStyle = clonedDoc.defaultView?.getComputedStyle(el);
+    if (!computedStyle) return;
+
+    PDF_STYLE_PROPS.forEach(([property, fallback]) => {
+      const computedValue = computedStyle.getPropertyValue(property);
+      const safeValue = normalizePdfColorValue(computedValue, fallback);
+      if (safeValue) {
+        el.style.setProperty(property, safeValue, "important");
+      }
+    });
+
+    const boxShadow = normalizePdfColorValue(computedStyle.getPropertyValue("box-shadow"), "none");
+    const textShadow = normalizePdfColorValue(computedStyle.getPropertyValue("text-shadow"), "none");
+    el.style.setProperty("box-shadow", boxShadow === "none" ? "none" : boxShadow, "important");
+    el.style.setProperty("text-shadow", textShadow === "none" ? "none" : textShadow, "important");
+
+    if (el instanceof clonedDoc.defaultView!.SVGElement) {
+      const fill = el.style.getPropertyValue("fill");
+      const stroke = el.style.getPropertyValue("stroke");
+      if (fill && fill !== "currentColor") el.setAttribute("fill", fill);
+      if (stroke && stroke !== "currentColor") el.setAttribute("stroke", stroke);
+    }
+  });
+}
+
 function TurnitinLogo({ opacity = 1, size = 18 }: { opacity?: number; size?: number }) {
   return (
     <div className="flex items-center gap-1.5" style={{ opacity }}>
@@ -178,46 +297,32 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
     setDownloading(true);
     try {
       // 1. Generate summary PDF bytes from DOM
-      const summaryArrayBuffer = (await html2pdf()
-        .set({
-          margin: 0,
-          filename: `${displayName}-ai-report.pdf`,
-          image: { type: "jpeg", quality: 0.98 },
-          html2canvas: {
-            scale: 2,
-            useCORS: true,
-            backgroundColor: "#ffffff",
-            onclone: (clonedDoc: Document) => {
-              // Tailwind v4 uses oklch(...) which html2canvas can't parse.
-              // Resolve every element's computed color props to rgb() inline.
-              const props = [
-                "color",
-                "backgroundColor",
-                "borderTopColor",
-                "borderRightColor",
-                "borderBottomColor",
-                "borderLeftColor",
-                "outlineColor",
-                "fill",
-                "stroke",
-              ] as const;
-              clonedDoc.querySelectorAll<HTMLElement>("*").forEach((el) => {
-                const cs = clonedDoc.defaultView?.getComputedStyle(el);
-                if (!cs) return;
-                props.forEach((p) => {
-                  const v = cs[p as unknown as number];
-                  if (v && !v.includes("oklch")) {
-                    (el.style as unknown as Record<string, string>)[p] = v;
-                  }
-                });
-              });
+      let summaryArrayBuffer: ArrayBuffer;
+      try {
+        summaryArrayBuffer = (await html2pdf()
+          .set({
+            margin: 0,
+            filename: `${displayName}-ai-report.pdf`,
+            image: { type: "jpeg", quality: 0.98 },
+            html2canvas: {
+              scale: 2,
+              useCORS: true,
+              backgroundColor: "#ffffff",
+              removeContainer: true,
+              onclone: makePdfCloneCanvasSafe,
             },
-          },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-          pagebreak: { mode: ["css", "legacy"] },
-        })
-        .from(pagesRef.current)
-        .output("arraybuffer")) as ArrayBuffer;
+            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+            pagebreak: { mode: ["css", "legacy"] },
+          })
+          .from(pagesRef.current)
+          .outputPdf("arraybuffer")) as ArrayBuffer;
+      } catch (renderError) {
+        console.error("Failed to render summary PDF", renderError);
+        toast.error("Could not render the report PDF", {
+          description: "Please try again after the report finishes loading.",
+        });
+        return;
+      }
 
       const mergedPdf = await PDFDocument.create();
       const summaryDoc = await PDFDocument.load(summaryArrayBuffer);
@@ -269,7 +374,9 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (error) {
       console.error("Failed to generate PDF", error);
-      toast.error("Failed to generate PDF");
+      toast.error("Failed to generate PDF", {
+        description: "The report could not be prepared for download.",
+      });
     } finally {
       setDownloading(false);
     }
