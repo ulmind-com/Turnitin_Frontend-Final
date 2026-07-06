@@ -322,7 +322,8 @@ async function renderSummaryPdf(element: HTMLElement, filename: string) {
     pdf.addImage(imageData, "JPEG", 0, y, pdfWidth, drawHeight, undefined, "FAST");
   }
 
-  return pdf.output("arraybuffer", { filename }) as ArrayBuffer;
+  const pdfOutput = pdf as unknown as { output: (type: "arraybuffer") => ArrayBuffer };
+  return pdfOutput.output("arraybuffer");
 }
 
 function getOriginalPageIndices(originalDoc: PDFDocument, expectedPageCount: number) {
@@ -515,7 +516,7 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
           const originalDoc = await PDFDocument.load(originalBytes);
           const originalPages = await mergedPdf.copyPages(
             originalDoc,
-            originalDoc.getPageIndices(),
+            getOriginalPageIndices(originalDoc, pageCount),
           );
           originalPages.forEach((p) => mergedPdf.addPage(p));
         } else {
