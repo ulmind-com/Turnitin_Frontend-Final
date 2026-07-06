@@ -1,6 +1,5 @@
 import { useRef, useState } from "react";
 import { Download, Sparkles, RefreshCw, X, FileText } from "lucide-react";
-import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { PDFDocument } from "pdf-lib";
 import { toast } from "sonner";
@@ -31,296 +30,177 @@ export interface TurnitinAIReportProps {
 
 const BRAND = "#0d5c8f";
 
-const PDF_STYLE_PROPS = [
-  ["color", "#111827"],
-  ["background-color", "transparent"],
-  ["border-top-color", "#e5e7eb"],
-  ["border-right-color", "#e5e7eb"],
-  ["border-bottom-color", "#e5e7eb"],
-  ["border-left-color", "#e5e7eb"],
-  ["outline-color", "#111827"],
-  ["text-decoration-color", "#111827"],
-  ["fill", "currentColor"],
-  ["stroke", "currentColor"],
-] as const;
+type SummaryPdfData = {
+  filename: string;
+  fileType: string;
+  createdAt: string;
+  submissionId: string;
+  overallAiScore: number;
+  pageCount: number;
+  wordCount: number;
+  characterCount: number;
+  fileSize?: number;
+  aiOnly: number;
+  paraphrased: number;
+  caution: { title: string; body: string };
+};
 
-const PDF_INLINE_STYLE_PROPS = [
-  "align-items",
-  "background-color",
-  "border-bottom-color",
-  "border-bottom-left-radius",
-  "border-bottom-right-radius",
-  "border-bottom-style",
-  "border-bottom-width",
-  "border-left-color",
-  "border-left-style",
-  "border-left-width",
-  "border-right-color",
-  "border-right-style",
-  "border-right-width",
-  "border-top-color",
-  "border-top-left-radius",
-  "border-top-right-radius",
-  "border-top-style",
-  "border-top-width",
-  "box-sizing",
-  "color",
-  "display",
-  "fill",
-  "flex",
-  "flex-basis",
-  "flex-direction",
-  "flex-grow",
-  "flex-shrink",
-  "flex-wrap",
-  "font-family",
-  "font-size",
-  "font-style",
-  "font-weight",
-  "gap",
-  "grid-template-columns",
-  "height",
-  "justify-content",
-  "letter-spacing",
-  "line-height",
-  "margin-bottom",
-  "margin-left",
-  "margin-right",
-  "margin-top",
-  "max-width",
-  "min-height",
-  "min-width",
-  "opacity",
-  "overflow-wrap",
-  "padding-bottom",
-  "padding-left",
-  "padding-right",
-  "padding-top",
-  "page-break-after",
-  "page-break-before",
-  "page-break-inside",
-  "row-gap",
-  "stroke",
-  "text-align",
-  "text-decoration-color",
-  "text-transform",
-  "vertical-align",
-  "white-space",
-  "width",
-  "word-break",
-] as const;
-
-function clamp01(value: number) {
-  return Math.min(1, Math.max(0, value));
+function setText(pdf: jsPDF, size: number, color = "#0b1220", style: "normal" | "bold" = "normal") {
+  pdf.setFont("helvetica", style);
+  pdf.setFontSize(size);
+  pdf.setTextColor(color);
 }
 
-function parseOklchChannel(value: string, isLightness = false) {
-  const trimmed = value.trim();
-  if (trimmed.endsWith("%")) {
-    const parsed = Number.parseFloat(trimmed);
-    return Number.isFinite(parsed) ? parsed / 100 : 0;
-  }
-
-  const parsed = Number.parseFloat(trimmed);
-  if (!Number.isFinite(parsed)) return 0;
-  return isLightness && parsed > 1 ? parsed / 100 : parsed;
+function drawTurnitinLogo(pdf: jsPDF, x: number, y: number, opacity = 1) {
+  pdf.setDrawColor(BRAND);
+  pdf.setLineWidth(0.8);
+  pdf.line(x, y + 3.5, x + 5, y - 1.5);
+  pdf.line(x + 5, y - 1.5, x + 2.8, y - 1.5);
+  pdf.line(x + 5, y - 1.5, x + 5, y + 1.2);
+  setText(pdf, 9, opacity < 1 ? "#7aa8c3" : BRAND, "bold");
+  pdf.text("turnitin®", x + 8, y + 3);
 }
 
-function parseOklchAlpha(value?: string) {
-  if (!value) return 1;
-  const trimmed = value.trim();
-  if (trimmed.endsWith("%")) {
-    const parsed = Number.parseFloat(trimmed);
-    return Number.isFinite(parsed) ? clamp01(parsed / 100) : 1;
-  }
-
-  const parsed = Number.parseFloat(trimmed);
-  return Number.isFinite(parsed) ? clamp01(parsed) : 1;
+function drawPageHeader(pdf: jsPDF, pageLabel: string, submissionId: string) {
+  pdf.setDrawColor("#e5e7eb");
+  pdf.setLineWidth(0.2);
+  pdf.line(0, 20, 210, 20);
+  drawTurnitinLogo(pdf, 16, 10);
+  setText(pdf, 7, "#6b7280");
+  pdf.text(pageLabel, 52, 13);
+  pdf.text(`Submission ID   trn:oid:::${submissionId}`, 120, 13);
 }
 
-function oklchToRgb(value: string) {
-  const alphaSplit = value.trim().split("/").map((part) => part.trim());
-  const channels = alphaSplit[0].split(/\s+/).filter(Boolean);
-  if (channels.length < 3) return null;
-
-  const l = parseOklchChannel(channels[0], true);
-  const c = parseOklchChannel(channels[1]);
-  const h = Number.parseFloat(channels[2]);
-  if (!Number.isFinite(h)) return null;
-
-  const alpha = parseOklchAlpha(alphaSplit[1]);
-  const hueRadians = (h * Math.PI) / 180;
-  const a = c * Math.cos(hueRadians);
-  const b = c * Math.sin(hueRadians);
-
-  const lPrime = l + 0.3963377774 * a + 0.2158037573 * b;
-  const mPrime = l - 0.1055613458 * a - 0.0638541728 * b;
-  const sPrime = l - 0.0894841775 * a - 1.291485548 * b;
-
-  const lCubed = lPrime ** 3;
-  const mCubed = mPrime ** 3;
-  const sCubed = sPrime ** 3;
-
-  const linearR = 4.0767416621 * lCubed - 3.3077115913 * mCubed + 0.2309699292 * sCubed;
-  const linearG = -1.2684380046 * lCubed + 2.6097574011 * mCubed - 0.3413193965 * sCubed;
-  const linearB = -0.0041960863 * lCubed - 0.7034186147 * mCubed + 1.707614701 * sCubed;
-
-  const toSrgb = (channel: number) => {
-    const converted =
-      channel <= 0.0031308 ? 12.92 * channel : 1.055 * channel ** (1 / 2.4) - 0.055;
-    return Math.round(clamp01(converted) * 255);
-  };
-
-  const red = toSrgb(linearR);
-  const green = toSrgb(linearG);
-  const blue = toSrgb(linearB);
-
-  return alpha < 1 ? `rgba(${red}, ${green}, ${blue}, ${alpha})` : `rgb(${red}, ${green}, ${blue})`;
+function drawPageFooter(pdf: jsPDF, pageLabel: string, submissionId: string) {
+  pdf.setDrawColor("#e5e7eb");
+  pdf.setLineWidth(0.2);
+  pdf.line(0, 277, 210, 277);
+  drawTurnitinLogo(pdf, 16, 284, 0.5);
+  setText(pdf, 7, "#6b7280");
+  pdf.text(pageLabel, 52, 287);
+  pdf.text(`Submission ID   trn:oid:::${submissionId}`, 120, 287);
 }
 
-function normalizePdfColorValue(value: string, fallback: string) {
-  if (!value || value === "none" || value === "currentColor") return value;
-  const normalized = value.replace(/oklch\(([^)]+)\)/gi, (_match, colorBody: string) => {
-    return oklchToRgb(colorBody) ?? fallback;
+function drawWrappedText(
+  pdf: jsPDF,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number,
+) {
+  const lines = pdf.splitTextToSize(text, maxWidth) as string[];
+  pdf.text(lines, x, y);
+  return y + lines.length * lineHeight;
+}
+
+function renderSummaryPdf(data: SummaryPdfData) {
+  const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait", compress: true });
+
+  drawPageHeader(pdf, "Page 1 of 2 - Cover Page", data.submissionId);
+  setText(pdf, 22, "#cbd5e1");
+  pdf.text("-     -", 102, 78, { align: "center" });
+
+  setText(pdf, 24, "#0b1220", "bold");
+  drawWrappedText(pdf, data.filename.replace(/\.[^.]+$/, ""), 16, 118, 178, 11);
+  setText(pdf, 11, "#6b7280");
+  pdf.text("AI Writing Detection Report", 16, 130);
+  setText(pdf, 8, "#4b5563");
+  pdf.text("▯  Assignment", 16, 140);
+  pdf.setDrawColor("#e5e7eb");
+  pdf.line(16, 155, 194, 155);
+
+  setText(pdf, 11, "#0b1220", "bold");
+  pdf.text("Document Details", 16, 170);
+  const details: Array<[string, string]> = [
+    ["SUBMISSION ID", `trn:oid:::${data.submissionId}`],
+    ["SUBMISSION DATE", formatDate(data.createdAt)],
+    ["FILE NAME", data.filename],
+    ["FILE TYPE", data.fileType.toUpperCase()],
+    ["FILE SIZE", formatBytes(data.fileSize)],
+  ];
+  let y = 184;
+  details.forEach(([label, value]) => {
+    setText(pdf, 6, "#6b7280", "bold");
+    pdf.text(label, 16, y);
+    setText(pdf, 8, "#0b1220", "bold");
+    drawWrappedText(pdf, value, 16, y + 6, 90, 5);
+    y += 18;
   });
 
-  return /\b(oklch|oklab|lch|lab|color-mix)\(/i.test(normalized) ? fallback : normalized;
-}
+  pdf.setFillColor("#fafafa");
+  pdf.setDrawColor("#e5e7eb");
+  pdf.roundedRect(128, 174, 66, 40, 1.5, 1.5, "FD");
+  setText(pdf, 8, "#0b1220", "bold");
+  pdf.text(`${data.pageCount.toLocaleString()} Pages`, 178, 186, { align: "right" });
+  pdf.text(`${data.wordCount.toLocaleString()} Words`, 178, 198, { align: "right" });
+  pdf.text(`${data.characterCount.toLocaleString()} Characters`, 178, 210, { align: "right" });
+  drawPageFooter(pdf, "Page 1 of 2 - Cover Page", data.submissionId);
 
-function normalizePdfStyleValue(property: string, value: string) {
-  if (!value) return value;
-  const colorFallback =
-    property.includes("background")
-      ? "transparent"
-      : property.includes("border")
-        ? "#e5e7eb"
-        : property === "fill" || property === "stroke"
-          ? "currentColor"
-          : "#111827";
+  pdf.addPage("a4", "portrait");
+  drawPageHeader(pdf, "Page 2 of 2 - AI Writing Overview", data.submissionId);
+  setText(pdf, 24, "#0b1220", "bold");
+  pdf.text(`${data.overallAiScore}% detected as AI`, 16, 55);
+  setText(pdf, 8, "#4b5563");
+  drawWrappedText(
+    pdf,
+    "The percentage indicates the combined amount of likely AI-generated text as well as likely AI-generated text that was also likely AI-paraphrased.",
+    16,
+    66,
+    78,
+    5,
+  );
 
-  if (
-    property.includes("color") ||
-    property.includes("shadow") ||
-    property === "fill" ||
-    property === "stroke"
-  ) {
-    return normalizePdfColorValue(value, colorFallback);
-  }
+  pdf.setFillColor("#e8f4fd");
+  pdf.setDrawColor("#d0e4f0");
+  pdf.roundedRect(112, 43, 82, 42, 2, 2, "FD");
+  setText(pdf, 8, "#0b1220", "bold");
+  pdf.text(data.caution.title, 118, 56);
+  setText(pdf, 7, "#0b1220");
+  drawWrappedText(pdf, data.caution.body, 118, 65, 68, 4.5);
 
-  return /\b(oklch|oklab|lch|lab|color-mix)\(/i.test(value) ? colorFallback : value;
-}
+  pdf.setDrawColor("#e5e7eb");
+  pdf.line(16, 100, 194, 100);
 
-function makePdfCloneCanvasSafe(clonedDoc: Document) {
-  const elements = clonedDoc.querySelectorAll<HTMLElement | SVGElement>("*");
+  pdf.setFillColor("#c4ebe8");
+  pdf.circle(22, 118, 5, "F");
+  setText(pdf, 8, "#0b1220");
+  pdf.text(`${Math.round(data.aiOnly * (data.wordCount / 100))}  AI-generated only  ${data.aiOnly}%`, 34, 116);
+  setText(pdf, 7, "#4b5563");
+  pdf.text("Likely AI-generated text from a large-language model.", 34, 124);
 
-  elements.forEach((el) => {
-    const computedStyle = clonedDoc.defaultView?.getComputedStyle(el);
-    if (!computedStyle) return;
+  pdf.setFillColor("#e3d7f5");
+  pdf.circle(22, 143, 5, "F");
+  setText(pdf, 8, "#0b1220");
+  pdf.text(
+    `${Math.round(data.paraphrased * (data.wordCount / 100))}  AI-generated text that was AI-paraphrased  ${data.paraphrased}%`,
+    34,
+    141,
+  );
+  setText(pdf, 7, "#4b5563");
+  drawWrappedText(
+    pdf,
+    "Likely AI-generated text that was likely revised using an AI-paraphrase tool or word spinner.",
+    34,
+    149,
+    145,
+    4.5,
+  );
 
-    el.removeAttribute("class");
-
-    PDF_INLINE_STYLE_PROPS.forEach((property) => {
-      const computedValue = computedStyle.getPropertyValue(property);
-      if (computedValue) {
-        el.style.setProperty(
-          property,
-          normalizePdfStyleValue(property, computedValue),
-          "important",
-        );
-      }
-    });
-
-    PDF_STYLE_PROPS.forEach(([property, fallback]) => {
-      const computedValue = computedStyle.getPropertyValue(property);
-      const safeValue = normalizePdfColorValue(computedValue, fallback);
-      if (safeValue) el.style.setProperty(property, safeValue, "important");
-    });
-
-    const boxShadow = normalizePdfColorValue(computedStyle.getPropertyValue("box-shadow"), "none");
-    const textShadow = normalizePdfColorValue(computedStyle.getPropertyValue("text-shadow"), "none");
-    el.style.setProperty("box-shadow", boxShadow === "none" ? "none" : boxShadow, "important");
-    el.style.setProperty("text-shadow", textShadow === "none" ? "none" : textShadow, "important");
-
-    if (el instanceof clonedDoc.defaultView!.SVGElement) {
-      const fill = el.style.getPropertyValue("fill");
-      const stroke = el.style.getPropertyValue("stroke");
-      if (fill && fill !== "currentColor") el.setAttribute("fill", fill);
-      if (stroke && stroke !== "currentColor") el.setAttribute("stroke", stroke);
-    }
-  });
-}
-
-function copyStylesToPdfClone(sourceRoot: HTMLElement, cloneRoot: HTMLElement) {
-  const sourceElements = [sourceRoot, ...Array.from(sourceRoot.querySelectorAll<HTMLElement | SVGElement>("*"))];
-  const cloneElements = [cloneRoot, ...Array.from(cloneRoot.querySelectorAll<HTMLElement | SVGElement>("*"))];
-
-  sourceElements.forEach((sourceEl, index) => {
-    const cloneEl = cloneElements[index];
-    const computedStyle = window.getComputedStyle(sourceEl);
-    if (!cloneEl || !computedStyle) return;
-
-    cloneEl.removeAttribute("class");
-    PDF_INLINE_STYLE_PROPS.forEach((property) => {
-      const value = computedStyle.getPropertyValue(property);
-      if (value) {
-        cloneEl.style.setProperty(property, normalizePdfStyleValue(property, value), "important");
-      }
-    });
-
-    const boxShadow = normalizePdfColorValue(computedStyle.getPropertyValue("box-shadow"), "none");
-    const textShadow = normalizePdfColorValue(computedStyle.getPropertyValue("text-shadow"), "none");
-    cloneEl.style.setProperty("box-shadow", boxShadow === "none" ? "none" : boxShadow, "important");
-    cloneEl.style.setProperty("text-shadow", textShadow === "none" ? "none" : textShadow, "important");
-
-    if (sourceEl instanceof SVGElement && cloneEl instanceof SVGElement) {
-      cloneEl.setAttribute("width", sourceEl.getAttribute("width") ?? `${sourceEl.clientWidth}`);
-      cloneEl.setAttribute("height", sourceEl.getAttribute("height") ?? `${sourceEl.clientHeight}`);
-      const fill = cloneEl.style.getPropertyValue("fill");
-      const stroke = cloneEl.style.getPropertyValue("stroke");
-      if (fill && fill !== "currentColor") cloneEl.setAttribute("fill", fill);
-      if (stroke && stroke !== "currentColor") cloneEl.setAttribute("stroke", stroke);
-    }
-  });
-
-  cloneRoot.style.setProperty("position", "fixed", "important");
-  cloneRoot.style.setProperty("left", "0", "important");
-  cloneRoot.style.setProperty("top", "0", "important");
-  cloneRoot.style.setProperty("z-index", "-1", "important");
-  cloneRoot.style.setProperty("pointer-events", "none", "important");
-  cloneRoot.style.setProperty("background", "#ffffff", "important");
-}
-
-async function renderSummaryPdf(element: HTMLElement, filename: string) {
-  const sourcePages = Array.from(element.querySelectorAll<HTMLElement>("section"));
-  if (sourcePages.length === 0) {
-    throw new Error("No report pages found for PDF export");
-  }
-
-  const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
-
-  for (const [index, page] of sourcePages.entries()) {
-    const canvas = await html2canvas(page, {
-      scale: Math.min(2, window.devicePixelRatio || 2),
-      useCORS: true,
-      backgroundColor: "#ffffff",
-      logging: false,
-      onclone: makePdfCloneCanvasSafe,
-    });
-
-    if (canvas.width <= 0 || canvas.height <= 0) {
-      throw new Error(`Report page ${index + 1} rendered blank`);
-    }
-
-    if (index > 0) pdf.addPage("a4", "portrait");
-
-    const imageData = canvas.toDataURL("image/jpeg", 0.98);
-    const pdfWidth = 210;
-    const pdfHeight = 297;
-    const imageHeight = (canvas.height * pdfWidth) / canvas.width;
-    const drawHeight = Math.min(pdfHeight, imageHeight);
-    const y = drawHeight < pdfHeight ? (pdfHeight - drawHeight) / 2 : 0;
-    pdf.addImage(imageData, "JPEG", 0, y, pdfWidth, drawHeight, undefined, "FAST");
-  }
+  pdf.setDrawColor("#e5e7eb");
+  pdf.line(16, 174, 194, 174);
+  setText(pdf, 8, "#0b1220", "bold");
+  pdf.text("Disclaimer", 16, 188);
+  setText(pdf, 7, "#4b5563");
+  drawWrappedText(
+    pdf,
+    "Our AI writing assessment is designed to help educators identify text that might be prepared by a generative AI tool. Our AI writing assessment may not always be accurate (i.e., our AI models may produce either false positive results or false negative results), so it should not be used as the sole basis for adverse actions against a student. It takes further scrutiny and human judgment in conjunction with an organization's application of its specific academic policies to determine whether any academic misconduct has occurred.",
+    16,
+    198,
+    178,
+    4.5,
+  );
+  drawPageFooter(pdf, "Page 2 of 2 - AI Writing Overview", data.submissionId);
 
   const pdfOutput = pdf as unknown as { output: (type: "arraybuffer") => ArrayBuffer };
   return pdfOutput.output("arraybuffer");
