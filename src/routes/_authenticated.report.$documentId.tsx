@@ -148,6 +148,7 @@ function ReportView({
   const [tab, setTab] = useState<"overview" | "plagiarism" | "ai" | "grade">("overview");
   const [downloading, setDownloading] = useState<null | "combined" | "plagiarism" | "ai">(null);
   const [showTurnitin, setShowTurnitin] = useState(false);
+  const [showPlagiarism, setShowPlagiarism] = useState(false);
 
   const downloadPdf = async (kind: "combined" | "plagiarism" | "ai") => {
     const path =
