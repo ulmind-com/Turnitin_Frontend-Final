@@ -1,11 +1,13 @@
 import { useRef, useState } from "react";
-import { Download, Sparkles, RefreshCw, X, FileText } from "lucide-react";
+import { Download, X, FileText } from "lucide-react";
 import { toPng } from "html-to-image";
 import { PDFDocument } from "pdf-lib";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/lib/config";
 import { useAuthStore } from "@/lib/auth-store";
 import { Button } from "@/components/ui/button";
+import aiIcon from "@/assets/icon-ai.png.asset.json";
+import paraIcon from "@/assets/icon-para.png.asset.json";
 
 /**
  * Turnitin-style AI Writing Detection Report.
