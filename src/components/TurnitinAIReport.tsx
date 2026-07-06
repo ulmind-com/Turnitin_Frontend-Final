@@ -1,0 +1,450 @@
+import { useRef, useState } from "react";
+import { Download, Sparkles, RefreshCw, X, FileText } from "lucide-react";
+import html2pdfLib from "html2pdf.js";
+const html2pdf = html2pdfLib as unknown as (...args: unknown[]) => {
+  set: (opts: Record<string, unknown>) => ReturnType<typeof html2pdf>;
+  from: (el: HTMLElement) => ReturnType<typeof html2pdf>;
+  save: () => Promise<void>;
+};
+import { Button } from "@/components/ui/button";
+
+/**
+ * Turnitin-style AI Writing Detection Report.
+ * Colors/typography are hardcoded here on purpose — it's a brand-clone visual
+ * (not part of the app's semantic design tokens).
+ */
+export interface TurnitinAIReportProps {
+  documentId: string;
+  fileName: string;
+  fileType: string;
+  createdAt: string;
+  overallAiScore: number;
+  heuristics: Record<string, number>;
+  metadata: {
+    page_count?: number;
+    character_count?: number;
+    file_size?: number;
+  };
+  extractedText?: string;
+  onClose: () => void;
+}
+
+const BRAND = "#0d5c8f";
+
+function TurnitinLogo({ opacity = 1, size = 18 }: { opacity?: number; size?: number }) {
+  return (
+    <div className="flex items-center gap-1.5" style={{ opacity }}>
+      <svg width={size + 4} height={size + 4} viewBox="0 0 32 32" fill="none">
+        <path
+          d="M8 22 L20 10 M20 10 L14 10 M20 10 L20 16"
+          stroke={BRAND}
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      <span
+        style={{
+          color: BRAND,
+          fontWeight: 700,
+          fontSize: size,
+          letterSpacing: "-0.01em",
+        }}
+      >
+        turnitin
+        <span style={{ fontSize: size * 0.5, verticalAlign: "super" }}>®</span>
+      </span>
+    </div>
+  );
+}
+
+function PageHeader({ pageLabel, submissionId }: { pageLabel: string; submissionId: string }) {
+  return (
+    <div
+      className="flex items-center justify-between px-12 py-5 border-b"
+      style={{ borderColor: "#e5e7eb" }}
+    >
+      <div className="flex items-center gap-6">
+        <TurnitinLogo />
+        <span className="text-[13px] text-gray-600">{pageLabel}</span>
+      </div>
+      <div className="text-[13px] text-gray-600">
+        Submission ID <span className="ml-2">trn:oid:::{submissionId}</span>
+      </div>
+    </div>
+  );
+}
+
+function PageFooter({ pageLabel, submissionId }: { pageLabel: string; submissionId: string }) {
+  return (
+    <div
+      className="flex items-center justify-between px-12 py-5 border-t"
+      style={{ borderColor: "#e5e7eb" }}
+    >
+      <div className="flex items-center gap-6">
+        <TurnitinLogo opacity={0.5} />
+        <span className="text-[13px] text-gray-500">{pageLabel}</span>
+      </div>
+      <div className="text-[13px] text-gray-500">
+        Submission ID <span className="ml-2">trn:oid:::{submissionId}</span>
+      </div>
+    </div>
+  );
+}
+
+function formatDate(iso: string) {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZoneName: "short",
+    });
+  } catch {
+    return iso;
+  }
+}
+
+function formatBytes(bytes?: number) {
+  if (!bytes) return "—";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+export function TurnitinAIReport(props: TurnitinAIReportProps) {
+  const {
+    documentId,
+    fileName,
+    fileType,
+    createdAt,
+    overallAiScore,
+    heuristics,
+    metadata,
+    extractedText,
+    onClose,
+  } = props;
+
+  const pagesRef = useRef<HTMLDivElement>(null);
+  const [downloading, setDownloading] = useState(false);
+
+  const submissionId = documentId.slice(0, 4) + ":" + documentId.slice(-12);
+
+  const wordCount =
+    extractedText && extractedText.trim()
+      ? extractedText.trim().split(/\s+/).length
+      : Math.round((metadata.character_count ?? 0) / 5);
+  const characterCount = metadata.character_count ?? extractedText?.length ?? 0;
+  const pageCount = metadata.page_count ?? Math.max(1, Math.ceil(wordCount / 300));
+
+  // Split calculation
+  const burstiness = heuristics.burstiness ?? 0.5;
+  const ttr = heuristics.type_token_ratio ?? 0.5;
+  const paraphraseShare = burstiness < 0.4 && ttr > 0.55 ? 0.35 : burstiness < 0.5 ? 0.15 : 0;
+  const paraphrased = Math.round(overallAiScore * paraphraseShare);
+  const aiOnly = Math.max(0, overallAiScore - paraphrased);
+
+  const caution =
+    overallAiScore < 20
+      ? {
+          title: "Low risk.",
+          body: "This document shows minimal indicators of AI-generated content. We still recommend reviewing the highlighted sections for context.",
+        }
+      : overallAiScore <= 60
+        ? {
+            title: "Caution: Review required.",
+            body: "It is essential to understand the limitations of AI detection before making decisions about a student's work. We encourage you to learn more about our AI detection capabilities before using the tool.",
+          }
+        : {
+            title: "High risk: Review strongly recommended.",
+            body: "A significant portion of this document was flagged as likely AI-generated. Please review carefully alongside your institution's academic policies.",
+          };
+
+  const displayName = fileName.replace(/\.[^.]+$/, "");
+
+  const downloadPdf = async () => {
+    if (!pagesRef.current) return;
+    setDownloading(true);
+    try {
+      await html2pdf()
+        .set({
+          margin: 0,
+          filename: `${displayName}-ai-report.pdf`,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, backgroundColor: "#ffffff" },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+          pagebreak: { mode: ["css", "legacy"] },
+        })
+        .from(pagesRef.current)
+        .save();
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-auto bg-neutral-200/70 backdrop-blur-sm">
+      {/* Top toolbar */}
+      <div className="sticky top-0 z-10 flex items-center justify-between bg-white border-b px-4 py-2 shadow-sm">
+        <Button variant="ghost" size="sm" onClick={onClose}>
+          <X className="h-4 w-4 mr-1" /> Close
+        </Button>
+        <div className="text-sm font-medium text-gray-700 flex items-center gap-2">
+          <FileText className="h-4 w-4" style={{ color: BRAND }} />
+          NAK-style AI Detection Report
+        </div>
+        <Button
+          onClick={downloadPdf}
+          disabled={downloading}
+          style={{ backgroundColor: BRAND }}
+          className="text-white hover:opacity-90"
+        >
+          <Download className="h-4 w-4 mr-2" />
+          {downloading ? "Preparing…" : "Download PDF"}
+        </Button>
+      </div>
+
+      {/* A4 pages */}
+      <div className="py-8 px-4 flex flex-col items-center gap-8">
+        <div ref={pagesRef} className="flex flex-col items-center gap-8">
+          {/* PAGE 1 - COVER */}
+          <section
+            className="bg-white shadow-lg flex flex-col"
+            style={{
+              width: "210mm",
+              minHeight: "297mm",
+              pageBreakAfter: "always",
+              fontFamily:
+                "-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif",
+              color: "#111827",
+            }}
+          >
+            <PageHeader pageLabel="Page 1 of 2 - Cover Page" submissionId={submissionId} />
+
+            <div className="flex-1 flex flex-col px-12 py-10">
+              <div className="text-center text-4xl tracking-[0.5em] text-gray-300 font-light select-none mt-8 mb-24">
+                - -
+              </div>
+
+              <h1
+                className="text-[46px] leading-[1.1] font-bold mb-4 break-words"
+                style={{ color: "#0b1220" }}
+              >
+                {displayName}
+              </h1>
+              <p className="text-[22px] text-gray-500 font-normal mb-2">
+                AI Writing Detection Report
+              </p>
+              <div className="flex items-center gap-2 text-gray-600 text-[15px] mb-10 mt-3">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <rect
+                    x="5"
+                    y="3"
+                    width="14"
+                    height="18"
+                    rx="2"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  />
+                  <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.5" />
+                </svg>
+                <span>Assignment</span>
+              </div>
+
+              <hr className="border-gray-200 mb-8" />
+
+              <h2 className="text-[20px] font-bold mb-6" style={{ color: "#0b1220" }}>
+                Document Details
+              </h2>
+
+              <div className="grid grid-cols-[1fr_auto] gap-16">
+                <div className="space-y-6">
+                  <div>
+                    <div className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold mb-1">
+                      Submission ID
+                    </div>
+                    <div className="text-[15px] font-semibold" style={{ color: "#0b1220" }}>
+                      trn:oid:::{submissionId}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold mb-1">
+                      Submission Date
+                    </div>
+                    <div className="text-[15px] font-semibold" style={{ color: "#0b1220" }}>
+                      {formatDate(createdAt)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold mb-1">
+                      File Name
+                    </div>
+                    <div className="text-[15px] font-semibold break-all" style={{ color: "#0b1220" }}>
+                      {fileName}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold mb-1">
+                      File Type
+                    </div>
+                    <div className="text-[15px] font-semibold uppercase" style={{ color: "#0b1220" }}>
+                      {fileType}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold mb-1">
+                      File Size
+                    </div>
+                    <div className="text-[15px] font-semibold" style={{ color: "#0b1220" }}>
+                      {formatBytes(metadata.file_size)}
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  className="rounded-md border px-8 py-6 min-w-[240px] space-y-4 text-right self-start"
+                  style={{ borderColor: "#e5e7eb", backgroundColor: "#fafafa" }}
+                >
+                  <div className="text-[15px] font-bold" style={{ color: "#0b1220" }}>
+                    {pageCount.toLocaleString()} Pages
+                  </div>
+                  <div className="text-[15px] font-bold" style={{ color: "#0b1220" }}>
+                    {wordCount.toLocaleString()} Words
+                  </div>
+                  <div className="text-[15px] font-bold" style={{ color: "#0b1220" }}>
+                    {characterCount.toLocaleString()} Characters
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex-1" />
+            </div>
+
+            <PageFooter pageLabel="Page 1 of 2 - Cover Page" submissionId={submissionId} />
+          </section>
+
+          {/* PAGE 2 - AI OVERVIEW */}
+          <section
+            className="bg-white shadow-lg flex flex-col"
+            style={{
+              width: "210mm",
+              minHeight: "297mm",
+              fontFamily:
+                "-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif",
+              color: "#111827",
+            }}
+          >
+            <PageHeader
+              pageLabel="Page 2 of 2 - AI Writing Overview"
+              submissionId={submissionId}
+            />
+
+            <div className="flex-1 flex flex-col px-12 py-10">
+              <div className="grid grid-cols-[1.1fr_1fr] gap-10 items-start">
+                <div>
+                  <h1
+                    className="text-[42px] leading-[1.1] font-bold mb-3"
+                    style={{ color: "#0b1220" }}
+                  >
+                    {overallAiScore}% detected as AI
+                  </h1>
+                  <p className="text-[14px] text-gray-600 leading-relaxed max-w-md">
+                    The percentage indicates the combined amount of likely AI-generated text as
+                    well as likely AI-generated text that was also likely AI-paraphrased.
+                  </p>
+                </div>
+
+                <div
+                  className="rounded-lg p-6 border"
+                  style={{ backgroundColor: "#e8f4fd", borderColor: "#d0e4f0" }}
+                >
+                  <div className="text-[14px] font-bold mb-3" style={{ color: "#0b1220" }}>
+                    {caution.title}
+                  </div>
+                  <p className="text-[13px] leading-relaxed" style={{ color: "#0b1220" }}>
+                    {caution.body}
+                  </p>
+                </div>
+              </div>
+
+              <hr className="border-gray-200 my-10" />
+
+              <div className="space-y-6">
+                <div className="flex items-start gap-4">
+                  <div
+                    className="rounded-full w-9 h-9 flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: "#c4ebe8" }}
+                  >
+                    <Sparkles className="h-4 w-4" style={{ color: "#0b7a70" }} />
+                  </div>
+                  <div>
+                    <div className="text-[15px] mb-1" style={{ color: "#0b1220" }}>
+                      <span className="font-bold">{Math.round(aiOnly * (wordCount / 100))}</span>
+                      <span className="mx-2 font-bold">AI-generated only</span>
+                      <span className="font-bold">{aiOnly}%</span>
+                    </div>
+                    <p className="text-[13px] text-gray-600">
+                      Likely AI-generated text from a large-language model.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div
+                    className="rounded-full w-9 h-9 flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: "#e3d7f5" }}
+                  >
+                    <RefreshCw className="h-4 w-4" style={{ color: "#6b3fa0" }} />
+                  </div>
+                  <div>
+                    <div className="text-[15px] mb-1" style={{ color: "#0b1220" }}>
+                      <span className="font-bold">
+                        {Math.round(paraphrased * (wordCount / 100))}
+                      </span>
+                      <span className="mx-2 font-bold">
+                        AI-generated text that was AI-paraphrased
+                      </span>
+                      <span className="font-bold">{paraphrased}%</span>
+                    </div>
+                    <p className="text-[13px] text-gray-600">
+                      Likely AI-generated text that was likely revised using an AI-paraphrase tool
+                      or word spinner.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <hr className="border-gray-200 my-10" />
+
+              <div>
+                <div className="text-[13px] font-bold mb-2" style={{ color: "#0b1220" }}>
+                  Disclaimer
+                </div>
+                <p className="text-[12px] text-gray-600 leading-relaxed">
+                  Our AI writing assessment is designed to help educators identify text that might
+                  be prepared by a generative AI tool. Our AI writing assessment may not always be
+                  accurate (i.e., our AI models may produce either false positive results or false
+                  negative results), so it should not be used as the sole basis for adverse actions
+                  against a student. It takes further scrutiny and human judgment in conjunction
+                  with an organization's application of its specific academic policies to determine
+                  whether any academic misconduct has occurred.
+                </p>
+              </div>
+
+              <div className="flex-1" />
+            </div>
+
+            <PageFooter
+              pageLabel="Page 2 of 2 - AI Writing Overview"
+              submissionId={submissionId}
+            />
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}

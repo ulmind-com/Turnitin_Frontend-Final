@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useState, useMemo, useRef, useEffect } from "react";
-import { ArrowLeft, Download, ExternalLink, AlertTriangle, ChevronDown, ChevronUp, FileText, Sparkles, FileDown } from "lucide-react";
+import { ArrowLeft, Download, ExternalLink, AlertTriangle, ChevronDown, ChevronUp, FileText, Sparkles, FileDown, ScanEye } from "lucide-react";
+import { TurnitinAIReport } from "@/components/TurnitinAIReport";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { useDocumentPolling } from "@/hooks/use-document-polling";
@@ -145,6 +146,7 @@ function ReportView({
   const rightPaneRef = useRef<HTMLDivElement>(null);
   const [tab, setTab] = useState<"overview" | "plagiarism" | "ai" | "grade">("overview");
   const [downloading, setDownloading] = useState<null | "combined" | "plagiarism" | "ai">(null);
+  const [showTurnitin, setShowTurnitin] = useState(false);
 
   const downloadPdf = async (kind: "combined" | "plagiarism" | "ai") => {
     const path =
@@ -211,7 +213,14 @@ function ReportView({
             <StatusBadge status={doc.ai_scan_status} />
           </div>
         </div>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowTurnitin(true)}
+            disabled={scanFailed}
+          >
+            <ScanEye className="h-4 w-4 mr-2" /> AI Detection Report
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -365,6 +374,19 @@ function ReportView({
           </Tabs>
         </div>
       </div>
+      {showTurnitin && (
+        <TurnitinAIReport
+          documentId={documentId}
+          fileName={report.file_name}
+          fileType={doc.file_type}
+          createdAt={doc.created_at}
+          overallAiScore={report.overall_ai_score}
+          heuristics={report.ai_heuristics}
+          metadata={doc.metadata}
+          extractedText={report.extracted_text}
+          onClose={() => setShowTurnitin(false)}
+        />
+      )}
     </div>
   );
 }
