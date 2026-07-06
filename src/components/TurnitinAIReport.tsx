@@ -220,7 +220,7 @@ async function stampHeaderFooter(
     const page = pages[idx];
     const { width, height } = page.getSize();
     const pageNum = startPageNumber + i;
-    const label = `Page ${pageNum} of ${totalPages} - Integrity Submission`;
+    const label = `Page ${pageNum} of ${totalPages} - AI Writing Overview`;
     const subText = `Submission ID  trn:oid:::${submissionId}`;
     const subW = font.widthOfTextAtSize(subText, FONT_SIZE);
     const textY = (y: number) => y - FONT_SIZE / 2 + 1;
