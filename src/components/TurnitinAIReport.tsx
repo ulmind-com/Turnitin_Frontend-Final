@@ -535,26 +535,7 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
               >
                 {displayName}
               </h1>
-              <p className="text-[22px] text-gray-500 font-normal mb-2">
-                AI Writing Detection Report
-              </p>
-              <div className="flex items-center gap-2 text-gray-600 text-[15px] mb-10 mt-3">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <rect
-                    x="5"
-                    y="3"
-                    width="14"
-                    height="18"
-                    rx="2"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  />
-                  <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.5" />
-                </svg>
-                <span>Assignment</span>
-              </div>
-
-              <hr className="border-gray-200 mb-8" />
+              <hr className="border-gray-200 mb-8 mt-6" />
 
               <h2 className="text-[20px] font-bold mb-6" style={{ color: "#0b1220" }}>
                 Document Details
