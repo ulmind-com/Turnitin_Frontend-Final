@@ -1,11 +1,18 @@
 import { useRef, useState } from "react";
 import { Download, Sparkles, RefreshCw, X, FileText } from "lucide-react";
 import html2pdfLib from "html2pdf.js";
-const html2pdf = html2pdfLib as unknown as (...args: unknown[]) => {
-  set: (opts: Record<string, unknown>) => ReturnType<typeof html2pdf>;
-  from: (el: HTMLElement) => ReturnType<typeof html2pdf>;
+import { PDFDocument } from "pdf-lib";
+import { toast } from "sonner";
+import { API_BASE_URL } from "@/lib/config";
+import { useAuthStore } from "@/lib/auth-store";
+type Html2PdfChain = {
+  set: (opts: Record<string, unknown>) => Html2PdfChain;
+  from: (el: HTMLElement) => Html2PdfChain;
   save: () => Promise<void>;
+  output: (type: string) => Promise<ArrayBuffer>;
+  outputPdf: (type: string) => Promise<ArrayBuffer>;
 };
+const html2pdf = html2pdfLib as unknown as () => Html2PdfChain;
 import { Button } from "@/components/ui/button";
 
 /**
@@ -170,7 +177,8 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
     if (!pagesRef.current) return;
     setDownloading(true);
     try {
-      await html2pdf()
+      // 1. Generate summary PDF bytes from DOM
+      const summaryArrayBuffer = (await html2pdf()
         .set({
           margin: 0,
           filename: `${displayName}-ai-report.pdf`,
@@ -180,7 +188,59 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
           pagebreak: { mode: ["css", "legacy"] },
         })
         .from(pagesRef.current)
-        .save();
+        .output("arraybuffer")) as ArrayBuffer;
+
+      const mergedPdf = await PDFDocument.create();
+      const summaryDoc = await PDFDocument.load(summaryArrayBuffer);
+      const summaryPages = await mergedPdf.copyPages(
+        summaryDoc,
+        summaryDoc.getPageIndices(),
+      );
+      summaryPages.forEach((p) => mergedPdf.addPage(p));
+
+      // 2. Try to fetch highlighted original PDF from backend
+      try {
+        const token = useAuthStore.getState().accessToken;
+        const res = await fetch(
+          `${API_BASE_URL}/documents/${documentId}/download-highlighted/ai`,
+          {
+            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+          },
+        );
+        if (res.ok) {
+          const originalBytes = await res.arrayBuffer();
+          const originalDoc = await PDFDocument.load(originalBytes);
+          const originalPages = await mergedPdf.copyPages(
+            originalDoc,
+            originalDoc.getPageIndices(),
+          );
+          originalPages.forEach((p) => mergedPdf.addPage(p));
+        } else {
+          toast.warning("Highlighted original unavailable", {
+            description: "Downloading summary only.",
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch highlighted PDF", err);
+        toast.warning("Highlighted original unavailable", {
+          description: "Downloading summary only.",
+        });
+      }
+
+      // 3. Save & trigger download
+      const finalBytes = await mergedPdf.save();
+      const blob = new Blob([finalBytes as BlobPart], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `AI_Report_${documentId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (error) {
+      console.error("Failed to generate PDF", error);
+      toast.error("Failed to generate PDF");
     } finally {
       setDownloading(false);
     }
