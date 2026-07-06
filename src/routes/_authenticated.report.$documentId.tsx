@@ -396,6 +396,20 @@ function ReportView({
           onClose={() => setShowTurnitin(false)}
         />
       )}
+      {showPlagiarism && (
+        <TurnitinPlagiarismReport
+          documentId={documentId}
+          fileName={report.file_name}
+          fileType={doc.file_type}
+          createdAt={doc.created_at}
+          overallPlagiarismScore={report.overall_plagiarism_score}
+          matchedSources={report.matched_sources ?? []}
+          integrityFlags={doc.integrity_flags ?? []}
+          metadata={doc.metadata}
+          extractedText={report.extracted_text}
+          onClose={() => setShowPlagiarism(false)}
+        />
+      )}
     </div>
   );
 }
