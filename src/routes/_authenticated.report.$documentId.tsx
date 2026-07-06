@@ -352,12 +352,12 @@ function ReportView({
             </TabsContent>
 
             <TabsContent value="plagiarism" className="flex-1 overflow-y-auto p-4 space-y-3 m-0">
-              {report.matched_sources.length === 0 ? (
+              {(report.matched_sources ?? []).length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">
                   No matching sources found.
                 </p>
               ) : (
-                report.matched_sources.map((s, i) => (
+                (report.matched_sources ?? []).map((s, i) => (
                   <SourceCard key={i} source={s} highlight={activeChunk === s.chunk_index} />
                 ))
               )}
