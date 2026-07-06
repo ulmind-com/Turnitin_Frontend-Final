@@ -422,7 +422,7 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
             <PageHeader pageLabel="Page 1 of 2 - Cover Page" submissionId={submissionId} />
 
             <div className="flex-1 flex flex-col px-14 pt-10 pb-10">
-              <div style={{ height: "230px" }} />
+              <div style={{ height: "380px" }} />
 
               <h1
                 className="text-[34px] leading-[1.2] font-bold mb-2 break-words"
