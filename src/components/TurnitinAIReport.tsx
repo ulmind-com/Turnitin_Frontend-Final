@@ -1,7 +1,11 @@
 import { useRef, useState } from "react";
 import { Download, Sparkles, RefreshCw, X, FileText } from "lucide-react";
-// @ts-expect-error - html2pdf.js has no types shipped
-import html2pdf from "html2pdf.js";
+import html2pdfLib from "html2pdf.js";
+const html2pdf = html2pdfLib as unknown as (...args: unknown[]) => {
+  set: (opts: Record<string, unknown>) => ReturnType<typeof html2pdf>;
+  from: (el: HTMLElement) => ReturnType<typeof html2pdf>;
+  save: () => Promise<void>;
+};
 import { Button } from "@/components/ui/button";
 
 /**
