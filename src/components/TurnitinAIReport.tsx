@@ -253,7 +253,7 @@ function renderSummaryPdf(data: SummaryPdfData, logoDataUrl: string | null = nul
     178,
     4.5,
   );
-  drawPageFooter(pdf, "Page 2 of 2 - AI Writing Overview", data.submissionId);
+  drawPageFooter(pdf, "Page 2 of 2 - AI Writing Overview", data.submissionId, logoDataUrl);
 
   const pdfOutput = pdf as unknown as { output: (type: "arraybuffer") => ArrayBuffer };
   return pdfOutput.output("arraybuffer");
