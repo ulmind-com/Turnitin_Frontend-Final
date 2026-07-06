@@ -614,26 +614,28 @@ export function TurnitinPlagiarismReport(props: TurnitinPlagiarismReportProps) {
               <hr className="border-gray-200 my-8" />
 
               <div>
-                <h3 className="text-[15px] font-bold mb-1" style={{ color: "#0b1220" }}>Integrity Flags</h3>
-                <div className="text-[13px] font-bold mb-4" style={{ color: "#0b1220" }}>
-                  {flags.length} Integrity Flag{flags.length === 1 ? "" : "s"} for Review
-                </div>
+                <div className="grid grid-cols-[1fr_2fr] gap-6 items-start">
+                  <div>
+                    <h3 className="text-[15px] font-bold mb-1" style={{ color: "#0b1220" }}>Integrity Flags</h3>
+                    <div className="text-[13px] font-bold mb-4" style={{ color: "#0b1220" }}>
+                      {flags.length} Integrity Flag{flags.length === 1 ? "" : "s"} for Review
+                    </div>
 
-                <div className="grid grid-cols-2 gap-6 items-start">
-                  <div className="space-y-2">
-                    {flags.map((f, i) => (
-                      <div
-                        key={i}
-                        className="rounded-lg p-3 flex items-start gap-2"
-                        style={{ backgroundColor: "#fff4e5", border: "1px solid #ffe0b2" }}
-                      >
-                        <AlertTriangle className="h-4 w-4 shrink-0" style={{ color: "#e65100" }} />
-                        <div>
-                          <div className="text-[12px] font-bold" style={{ color: "#4e342e" }}>{f.type}</div>
-                          <div className="text-[11px]" style={{ color: "#5d4037" }}>{f.description}</div>
+                    <div className="space-y-2">
+                      {flags.map((f, i) => (
+                        <div
+                          key={i}
+                          className="rounded-lg p-3 flex items-start gap-2"
+                          style={{ backgroundColor: "#fff4e5", border: "1px solid #ffe0b2" }}
+                        >
+                          <AlertTriangle className="h-4 w-4 shrink-0" style={{ color: "#e65100" }} />
+                          <div>
+                            <div className="text-[12px] font-bold" style={{ color: "#4e342e" }}>{f.type}</div>
+                            <div className="text-[11px]" style={{ color: "#5d4037" }}>{f.description}</div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
 
                   <div
@@ -649,6 +651,7 @@ export function TurnitinPlagiarismReport(props: TurnitinPlagiarismReportProps) {
                   </div>
                 </div>
               </div>
+
 
               <div className="flex-1" />
             </div>
