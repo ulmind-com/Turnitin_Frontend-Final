@@ -213,9 +213,9 @@ function PageHeader({ pageLabel, submissionId }: { pageLabel: string; submission
     >
       <div className="flex items-center gap-8">
         <TurnitinLogo />
-        <span style={{ fontSize: "12px", color: "#1f2937", fontWeight: 400 }}>{pageLabel}</span>
+        <span style={{ fontSize: "10px", color: "#1f2937", fontWeight: 400 }}>{pageLabel}</span>
       </div>
-      <div style={{ fontSize: "12px", color: "#1f2937", fontWeight: 400 }}>
+      <div style={{ fontSize: "10px", color: "#1f2937", fontWeight: 400 }}>
         Submission ID <span className="ml-3">trn:oid:::{submissionId}</span>
       </div>
     </div>
@@ -230,9 +230,9 @@ function PageFooter({ pageLabel, submissionId }: { pageLabel: string; submission
     >
       <div className="flex items-center gap-8">
         <TurnitinLogo />
-        <span style={{ fontSize: "12px", color: "#1f2937", fontWeight: 400 }}>{pageLabel}</span>
+        <span style={{ fontSize: "10px", color: "#1f2937", fontWeight: 400 }}>{pageLabel}</span>
       </div>
-      <div style={{ fontSize: "12px", color: "#1f2937", fontWeight: 400 }}>
+      <div style={{ fontSize: "10px", color: "#1f2937", fontWeight: 400 }}>
         Submission ID <span className="ml-3">trn:oid:::{submissionId}</span>
       </div>
     </div>
