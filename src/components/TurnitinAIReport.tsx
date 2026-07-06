@@ -1,18 +1,11 @@
 import { useRef, useState } from "react";
 import { Download, Sparkles, RefreshCw, X, FileText } from "lucide-react";
-import html2pdfLib from "html2pdf.js";
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
 import { PDFDocument } from "pdf-lib";
 import { toast } from "sonner";
 import { API_BASE_URL } from "@/lib/config";
 import { useAuthStore } from "@/lib/auth-store";
-type Html2PdfChain = {
-  set: (opts: Record<string, unknown>) => Html2PdfChain;
-  from: (el: HTMLElement) => Html2PdfChain;
-  save: () => Promise<void>;
-  output: (type: string) => Promise<ArrayBuffer>;
-  outputPdf: (type: string) => Promise<ArrayBuffer>;
-};
-const html2pdf = html2pdfLib as unknown as () => Html2PdfChain;
 import { Button } from "@/components/ui/button";
 
 /**
@@ -224,12 +217,23 @@ function makePdfCloneCanvasSafe(clonedDoc: Document) {
     const computedStyle = clonedDoc.defaultView?.getComputedStyle(el);
     if (!computedStyle) return;
 
+    el.removeAttribute("class");
+
+    PDF_INLINE_STYLE_PROPS.forEach((property) => {
+      const computedValue = computedStyle.getPropertyValue(property);
+      if (computedValue) {
+        el.style.setProperty(
+          property,
+          normalizePdfStyleValue(property, computedValue),
+          "important",
+        );
+      }
+    });
+
     PDF_STYLE_PROPS.forEach(([property, fallback]) => {
       const computedValue = computedStyle.getPropertyValue(property);
       const safeValue = normalizePdfColorValue(computedValue, fallback);
-      if (safeValue) {
-        el.style.setProperty(property, safeValue, "important");
-      }
+      if (safeValue) el.style.setProperty(property, safeValue, "important");
     });
 
     const boxShadow = normalizePdfColorValue(computedStyle.getPropertyValue("box-shadow"), "none");
@@ -287,31 +291,52 @@ function copyStylesToPdfClone(sourceRoot: HTMLElement, cloneRoot: HTMLElement) {
 }
 
 async function renderSummaryPdf(element: HTMLElement, filename: string) {
-  const pdfElement = element.cloneNode(true) as HTMLElement;
-  copyStylesToPdfClone(element, pdfElement);
-  document.body.appendChild(pdfElement);
-
-  try {
-    return (await html2pdf()
-      .set({
-        margin: 0,
-        filename,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: "#ffffff",
-          removeContainer: true,
-          onclone: makePdfCloneCanvasSafe,
-        },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        pagebreak: { mode: ["css", "legacy"] },
-      })
-      .from(pdfElement)
-      .outputPdf("arraybuffer")) as ArrayBuffer;
-  } finally {
-    pdfElement.remove();
+  const sourcePages = Array.from(element.querySelectorAll<HTMLElement>("section"));
+  if (sourcePages.length === 0) {
+    throw new Error("No report pages found for PDF export");
   }
+
+  const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+
+  for (const [index, page] of sourcePages.entries()) {
+    const canvas = await html2canvas(page, {
+      scale: Math.min(2, window.devicePixelRatio || 2),
+      useCORS: true,
+      backgroundColor: "#ffffff",
+      logging: false,
+      onclone: makePdfCloneCanvasSafe,
+    });
+
+    if (canvas.width <= 0 || canvas.height <= 0) {
+      throw new Error(`Report page ${index + 1} rendered blank`);
+    }
+
+    if (index > 0) pdf.addPage("a4", "portrait");
+
+    const imageData = canvas.toDataURL("image/jpeg", 0.98);
+    const pdfWidth = 210;
+    const pdfHeight = 297;
+    const imageHeight = (canvas.height * pdfWidth) / canvas.width;
+    const drawHeight = Math.min(pdfHeight, imageHeight);
+    const y = drawHeight < pdfHeight ? (pdfHeight - drawHeight) / 2 : 0;
+    pdf.addImage(imageData, "JPEG", 0, y, pdfWidth, drawHeight, undefined, "FAST");
+  }
+
+  const pdfOutput = pdf as unknown as { output: (type: "arraybuffer") => ArrayBuffer };
+  return pdfOutput.output("arraybuffer");
+}
+
+function getOriginalPageIndices(originalDoc: PDFDocument, expectedPageCount: number) {
+  const indices = originalDoc.getPageIndices();
+  const expected = Math.max(1, Math.round(expectedPageCount));
+
+  // Some highlighted PDFs arrive with one generated blank page before the real
+  // source document. Keep the trailing pages that match the source page count.
+  if (Number.isFinite(expected) && expected > 0 && indices.length > expected) {
+    return indices.slice(indices.length - expected);
+  }
+
+  return indices;
 }
 
 function TurnitinLogo({ opacity = 1, size = 18 }: { opacity?: number; size?: number }) {
@@ -490,7 +515,7 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
           const originalDoc = await PDFDocument.load(originalBytes);
           const originalPages = await mergedPdf.copyPages(
             originalDoc,
-            originalDoc.getPageIndices(),
+            getOriginalPageIndices(originalDoc, pageCount),
           );
           originalPages.forEach((p) => mergedPdf.addPage(p));
         } else {
