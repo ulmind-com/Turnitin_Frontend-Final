@@ -413,6 +413,7 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
         <div ref={pagesRef} className="flex flex-col items-center gap-8">
           {/* PAGE 1 - COVER */}
           <section
+            data-report-page="cover"
             className="bg-white shadow-lg flex flex-col"
             style={{
               width: "210mm",
@@ -510,6 +511,7 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
 
           {/* PAGE 2 - AI OVERVIEW */}
           <section
+            data-report-page="overview"
             className="bg-white shadow-lg flex flex-col"
             style={{
               width: "210mm",
