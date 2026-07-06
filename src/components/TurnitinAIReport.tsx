@@ -554,7 +554,7 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
                   <img
-                    src={aiIcon.url}
+                    src={aiIcon}
                     alt=""
                     crossOrigin="anonymous"
                     className="w-9 h-9 shrink-0"
@@ -574,7 +574,7 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
 
                 <div className="flex items-start gap-4">
                   <img
-                    src={paraIcon.url}
+                    src={paraIcon}
                     alt=""
                     crossOrigin="anonymous"
                     className="w-9 h-9 shrink-0"
