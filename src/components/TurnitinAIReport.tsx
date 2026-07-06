@@ -520,10 +520,10 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
             />
 
             <div className="flex-1 flex flex-col px-12 py-10">
-              <div className="grid grid-cols-[1.1fr_1fr] gap-10 items-start">
-                <div>
+              <div className="grid grid-cols-[1.35fr_1fr] gap-8 items-stretch">
+                <div className="flex flex-col justify-center">
                   <h1
-                    className="text-[42px] leading-[1.1] font-bold mb-3"
+                    className="text-[38px] leading-[1.1] font-bold mb-3 whitespace-nowrap"
                     style={{ color: "#0b1220" }}
                   >
                     {overallAiScore}% detected as AI
@@ -535,7 +535,7 @@ export function TurnitinAIReport(props: TurnitinAIReportProps) {
                 </div>
 
                 <div
-                  className="rounded-lg p-6 border"
+                  className="rounded-lg p-6 border flex flex-col justify-center"
                   style={{ backgroundColor: "#e8f4fd", borderColor: "#d0e4f0" }}
                 >
                   <div className="text-[14px] font-bold mb-3" style={{ color: "#0b1220" }}>
