@@ -274,28 +274,17 @@ function getOriginalPageIndices(originalDoc: PDFDocument, expectedPageCount: num
 
 function TurnitinLogo({ opacity = 1, size = 18 }: { opacity?: number; size?: number }) {
   return (
-    <div className="flex items-center gap-1.5" style={{ opacity }}>
-      <svg width={size + 4} height={size + 4} viewBox="0 0 32 32" fill="none">
-        <path
-          d="M8 22 L20 10 M20 10 L14 10 M20 10 L20 16"
-          stroke={BRAND}
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <span
-        style={{
-          color: BRAND,
-          fontWeight: 700,
-          fontSize: size,
-          letterSpacing: "-0.01em",
-        }}
-      >
-        turnitin
-        <span style={{ fontSize: size * 0.5, verticalAlign: "super" }}>®</span>
-      </span>
-    </div>
+    <img
+      src={TURNITIN_LOGO_URL}
+      alt="turnitin"
+      crossOrigin="anonymous"
+      style={{
+        opacity,
+        height: size + 4,
+        width: "auto",
+        display: "block",
+      }}
+    />
   );
 }
 
