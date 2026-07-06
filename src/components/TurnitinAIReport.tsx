@@ -1,11 +1,20 @@
 import { useRef, useState } from "react";
 import { Download, Sparkles, RefreshCw, X, FileText } from "lucide-react";
 import html2pdfLib from "html2pdf.js";
-const html2pdf = html2pdfLib as unknown as (...args: unknown[]) => {
-  set: (opts: Record<string, unknown>) => ReturnType<typeof html2pdf>;
-  from: (el: HTMLElement) => ReturnType<typeof html2pdf>;
+import { PDFDocument } from "pdf-lib";
+import { toast } from "sonner";
+import { PDFDocument } from "pdf-lib";
+import { toast } from "sonner";
+import { API_BASE_URL } from "@/lib/config";
+import { useAuthStore } from "@/lib/auth-store";
+type Html2PdfChain = {
+  set: (opts: Record<string, unknown>) => Html2PdfChain;
+  from: (el: HTMLElement) => Html2PdfChain;
   save: () => Promise<void>;
+  output: (type: string) => Promise<ArrayBuffer>;
+  outputPdf: (type: string) => Promise<ArrayBuffer>;
 };
+const html2pdf = html2pdfLib as unknown as () => Html2PdfChain;
 import { Button } from "@/components/ui/button";
 
 /**
