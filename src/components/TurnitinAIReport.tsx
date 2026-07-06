@@ -3,8 +3,6 @@ import { Download, Sparkles, RefreshCw, X, FileText } from "lucide-react";
 import html2pdfLib from "html2pdf.js";
 import { PDFDocument } from "pdf-lib";
 import { toast } from "sonner";
-import { PDFDocument } from "pdf-lib";
-import { toast } from "sonner";
 import { API_BASE_URL } from "@/lib/config";
 import { useAuthStore } from "@/lib/auth-store";
 type Html2PdfChain = {
